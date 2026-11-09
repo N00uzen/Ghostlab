@@ -17,7 +17,7 @@
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GHOSTLAB</title>
-    <link rel="icon" type="image/x-icon" href="../icons/ghostlab.ico">
+    <link rel="icon" type="image/x-icon" href="./icons/ghostlab.ico">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 
     <style>
@@ -1610,7 +1610,7 @@
     <canvas id="fx"></canvas>
 
     <!-- Smudge timer sound (keep the mp3 next to this file) -->
-    <audio id="timer-audio" src="../sound/dragon-studio-clock-ticking-sfx-467486.mp3" preload="auto"></audio>
+    <audio id="timer-audio" src="./sound/dragon-studio-clock-ticking-sfx-467486.mp3" preload="auto"></audio>
 
     <button class="menu-toggle" id="menu-toggle">
         <span id="menu-icon">☰</span>
@@ -1832,7 +1832,7 @@
                      "• W stanie DOTS wędruje w stronę celu.<br>" +
                      "• <b>66% szans</b> na podejście do celu bez zostawiania EMF.<br>" +
                      "• Atakuje przy 50% sanity celu (nawet jeśli cel jest na zewnątrz, co może oznaczać atak przy 87% średniej grupy).",
-                desc:"• <b>Nasłuchuj ducha za pomocą mikrofonu parabolicznego</b> – jeśli usłyszysz <b>unikalny krzyk</b>, jest to <b>Banshee</b>. " + mics("banshee", ["../sound/banshee1.mp3", "../sound/banshee2.mp3", "../sound/banshee3.mp3", "../sound/banshee4.mp3"]) + "<br>" +
+                desc:"• <b>Nasłuchuj ducha za pomocą mikrofonu parabolicznego</b> – jeśli usłyszysz <b>unikalny krzyk</b>, jest to <b>Banshee</b>. " + mics("banshee", ["./sound/banshee1.mp3", "./sound/banshee2.mp3", "./sound/banshee3.mp3", "./sound/banshee4.mp3"]) + "<br>" +
                      "• W trybie wieloosobowym niech wszyscy gracze będą w środku podczas polowania. Jeśli duch <b>nie ściga graczy, którzy nie są jego celem</b>, lub jeśli tacy gracze mogą <b>dotknąć ducha bez ryzyka śmierci</b>, jest to <b>Banshee</b>.<br>" +
                      "• Rozmieść <b>czujniki ruchu</b> na mapie. Użyj ich, aby sprawdzić, czy duch <b>często wędruje w stronę jednego z graczy</b>. Jeśli tak, może to być <b>Banshee</b>.<br>" + 
                      "•Jeśli duch ma <b>męski model postaci lub męskie imię</b>, <b>nie jest to Banshee</b>.<br>"
@@ -2202,7 +2202,7 @@
             "Deogen": bullets(
                 "• Zawsze zna Twoją pozycję w polowaniu (LOS) – <b>nie da się przed nim ukryć</b>.",
                 "• Daleko od gracza jest bardzo szybki (<b>3.0 m/s</b>), ale blisko zwalnia do <b>0.4 m/s</b>, co pozwala go loopować.",
-                "• 33% szans na unikalny <b>ciężki oddech</b> przez Spirit Box w zasięgu 1 m. " + mics("deogen", ["../sound/deogen.mp3"]),
+                "• 33% szans na unikalny <b>ciężki oddech</b> przez Spirit Box w zasięgu 1 m. " + mics("deogen", ["./sound/deogen.mp3"]),
             ),
 
             "Gallu": bullets(
@@ -3202,7 +3202,7 @@
         (function () {
             "use strict";
 
-            const IMAGE_FOLDER = "../maps2/";
+            const IMAGE_FOLDER = "./maps2/";
             const IMAGE_EXTENSIONS = ["jpg", "png", "webp", "jpeg"];
             const MAPS = [
                 /* Small */

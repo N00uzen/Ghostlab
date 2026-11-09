@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <script>
+        /* First visit in this tab: play intro.html, which always continues to index.html when it is done.
+           intro.html sets "gl-intro-seen" right before it leaves, so this never loops. */
+        (function () {
+            try {
+                if (sessionStorage.getItem("gl-intro-seen")) return;           // intro already played in this tab
+                sessionStorage.setItem("gl-storage-test", "1");                // if storage is blocked this throws -> no redirect (no loop)
+                sessionStorage.removeItem("gl-storage-test");
+                document.documentElement.style.visibility = "hidden";          // no flash of the page before the redirect
+                location.replace("intro.html");
+            } catch (error) { /* storage blocked: just show the page */ }
+        })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GHOSTLAB // PRZEKLĘTE PRZEDMIOTY</title>
+    <link rel="icon" type="image/x-icon" href="../icons/ghostlab.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+    <style>
+        /* ======== DESIGN TOKENS ======== */
+        :root {
+            --neon-blue: #00e5ff;
+            --mag: #ff2bd6;
+            --yel: #f9f002;
+            --ice-white: #d7f8ff;
+            --border-glow: rgba(0, 229, 255, 0.35);
+            --cut-s: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+        }
+
+        /* ======== BASE ======== */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            min-height: 100vh;
+            background-color: #02070c;
+            background-image:
+                radial-gradient(ellipse at 50% -15%, rgba(0, 229, 255, 0.22), transparent 55%),
+                radial-gradient(circle at 100% 100%, rgba(255, 43, 214, 0.16), transparent 45%),
+                linear-gradient(rgba(0, 229, 255, 0.06) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 229, 255, 0.06) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 48px 48px, 48px 48px;
+            background-attachment: fixed;
+            color: var(--ice-white);
+            font: 500 1.05rem 'Rajdhani', sans-serif;
+        }
+
+        /* scanlines */
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            z-index: 5;
+            pointer-events: none;
+            background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.22) 0 1px, transparent 1px 3px);
+            mix-blend-mode: multiply;
+        }
+
+        /* ======== LAYOUT ======== */
+        .page {
+            position: relative;
+            max-width: 1500px;
+            margin: 0 auto;
+            padding: 90px 32px 80px;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 22px;
+            left: 22px;
+            z-index: 10;
+            padding: 12px 18px;
+            background: var(--neon-blue);
+            color: #02070c;
+            text-decoration: none;
+            font: 700 0.8rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.1em;
+            clip-path: var(--cut-s);
+            transition: 0.2s;
+        }
+
+        .back-link:hover {
+            background: #fff;
+        }
+
+        .hero {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .hero::after {
+            content: '';
+            display: block;
+            height: 2px;
+            width: min(420px, 70%);
+            margin: 24px auto 0;
+            background: linear-gradient(90deg, transparent, var(--neon-blue), var(--mag), transparent);
+        }
+
+        .eyebrow {
+            font: 0.8rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.3em;
+            color: var(--neon-blue);
+        }
+
+        .hero h1 {
+            margin: 14px 0;
+            font: 900 clamp(2rem, 6.5vw, 4.2rem) 'Orbitron', sans-serif;
+            letter-spacing: 0.08em;
+            line-height: 1.15;
+            color: #fff;
+            text-shadow: 4px 0 var(--mag), -4px 0 var(--neon-blue), 0 0 40px rgba(0, 229, 255, 0.5);
+        }
+
+        .hero p {
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.5;
+            font-size: 1.15rem;
+            color: #9fd3de;
+        }
+
+        /* quick jump bar */
+        .jump {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 28px;
+        }
+
+        .jump a {
+            padding: 9px 14px;
+            border: 1px solid var(--border-glow);
+            color: var(--ice-white);
+            text-decoration: none;
+            font: 700 0.76rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.06em;
+            clip-path: var(--cut-s);
+            transition: 0.2s;
+        }
+
+        .jump a:hover {
+            background: var(--neon-blue);
+            border-color: var(--neon-blue);
+            color: #02070c;
+        }
+
+        .cursed-card {
+            scroll-margin-top: 20px;
+        }
+
+        /* ======== CURSED ITEMS GUIDE ======== */
+        .cursed-panel {
+            margin-bottom: 28px;
+            padding: 22px;
+            background: rgba(2, 12, 18, 0.78);
+            border: 1px solid rgba(0, 229, 255, 0.35);
+            border-left: 4px solid var(--neon-blue);
+        }
+
+        .cursed-panel h2 {
+            margin-bottom: 14px;
+            font: 900 1.15rem 'Orbitron', sans-serif;
+            letter-spacing: 0.08em;
+            color: #fff;
+        }
+
+        .cursed-panel ul,
+        .cursed-card ul {
+            margin: 0 0 4px 18px;
+            line-height: 1.5;
+            color: #c4e6ee;
+        }
+
+        .cursed-panel li,
+        .cursed-card li {
+            margin-bottom: 5px;
+        }
+
+        .cursed-panel b,
+        .cursed-card b {
+            color: var(--neon-blue);
+        }
+
+        .cursed-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(min(100%, 430px), 1fr));
+            gap: 26px;
+        }
+
+        .cursed-card {
+            --accent: var(--neon-blue);
+            padding: 22px;
+            background: rgba(2, 12, 18, 0.82);
+            border: 1px solid rgba(0, 229, 255, 0.3);
+            border-left: 4px solid var(--accent);
+        }
+
+        .cursed-card header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 12px;
+        }
+
+        .c-icon {
+            display: grid;
+            place-items: center;
+            width: 50px;
+            height: 50px;
+            font-size: 1.6rem;
+            border: 1px solid var(--accent);
+            box-shadow: 0 0 16px color-mix(in srgb, var(--accent) 40%, transparent);
+        }
+
+        .cursed-card h3 {
+            font: 900 1.2rem 'Orbitron', sans-serif;
+            letter-spacing: 0.06em;
+            color: #fff;
+            text-shadow: 2px 0 var(--accent);
+        }
+
+        .c-tagline {
+            font: 0.78rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.1em;
+            color: var(--accent);
+        }
+
+        .c-what {
+            margin-bottom: 12px;
+            line-height: 1.5;
+            color: #e3f6fb;
+        }
+
+        .c-cost {
+            margin-bottom: 14px;
+            padding: 9px 12px;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px dashed var(--accent);
+            font-size: 0.95rem;
+        }
+
+        .c-cost label,
+        .cursed-card h4 {
+            display: block;
+            margin: 14px 0 6px;
+            font: 0.72rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.18em;
+            color: var(--accent);
+        }
+
+        .c-cost label {
+            margin: 0 0 3px;
+        }
+
+        .cursed-card h4.danger {
+            color: #ff4d6d;
+        }
+
+        .c-tip {
+            margin-top: 14px;
+            padding: 10px 12px;
+            background: rgba(249, 240, 2, 0.07);
+            border-left: 3px solid var(--yel);
+            line-height: 1.45;
+            color: #f5f3b0;
+        }
+
+        .c-table {
+            width: 100%;
+            margin-top: 6px;
+            border-collapse: collapse;
+            font-size: 0.92rem;
+            line-height: 1.4;
+        }
+
+        .c-table td {
+            padding: 6px 8px;
+            border-bottom: 1px solid rgba(0, 229, 255, 0.15);
+            vertical-align: top;
+            color: #c4e6ee;
+        }
+
+        .c-table td:first-child {
+            width: 34%;
+            font-weight: 700;
+            color: var(--accent, var(--neon-blue));
+        }
+
+        .cursed-note {
+            margin-top: 26px;
+            font: 0.75rem 'Share Tech Mono', monospace;
+            line-height: 1.6;
+            color: #5f97a4;
+        }
+    
+
+        @media (max-width: 700px) {
+            .page {
+                padding: 80px 14px 60px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- If you rename the main page, change this link -->
+    <a class="back-link" href="index.html">← POWRÓT DO GHOSTLAB</a>
+
+    <main class="page">
+        <header class="hero">
+            <div class="eyebrow">[ CURSED ARCHIVE // FIELD MANUAL ]</div>
+            <h1>PRZEKLĘTE PRZEDMIOTY</h1>
+            <p>Jak działają, ile kosztują i kiedy wywołują cursed hunt. Wybierz przedmiot poniżej albo przewiń stronę.</p>
+        </header>
+
+        <div id="cursed-root"></div>
+    </main>
+
+    <script>
+        "use strict";
+
+        /* ==========================================================================
+           CURSED ITEMS GUIDE
+           Data below was collected from the Phasmophobia wiki and several guides.
+           Numbers can change with game updates - edit the lists to keep it current.
+           ========================================================================== */
+        (function () {
+            "use strict";
+
+            /* ---------- content ---------- */
+            const BASICS = [
+                "Na standardowych poziomach trudności (poza Insanity) <b>losuje się 1 przedmiot na kontrakt</b>. W trybie Custom ustawisz ich liczbę i wybór.",
+                "Każdy przedmiot ma <b>jedno stałe miejsce</b> na mapie (na Brownstone, Prison i Sunny Meadows wszystkie leżą w jednym pokoju).",
+                "Działają <b>tylko w obszarze śledztwa</b>. Wymagają wolnej ręki i nie wchodzą do ekwipunku: wypadają, gdy zmienisz przedmiot. Wyjątki: <b>Summoning Circle</b> jest nieruchomy, a <b>Ouija Board</b> można zostawić na ziemi.",
+                "Użycie któregokolwiek <b>kończy fazę przygotowania</b> (setup).",
+                "Prawie każdy <b>kosztuje sanity</b> i może wywołać <b>cursed hunt</b>: polowanie z przedmiotu, które ignoruje próg sanity i cooldown, a kadzidło nie zapobiegnie mu z wyprzedzeniem.",
+                "Nie są potrzebne do celów kontraktu. Warto zrobić im <b>zdjęcie</b> (do 5 XP i $5).",
+                "Opcja <b>Friendly ghost</b> (Custom) wyłącza polowania po większości takich sytuacji."
+            ];
+
+            const GOALS = [
+                ["Znaleźć pokój ducha", "Haunted Mirror (najdokładniej), Music Box (po dźwięku), Voodoo Doll (po miejscu interakcji), Ouija „Where are you?”"],
+                ["Wymusić polowanie (cel / test)", "Summoning Circle, Music Box (upuszczona), karta Death, Voodoo Doll (szpilka w sercu), Ouija „Hide and seek”"],
+                ["Obniżyć sanity (cel, test progu)", "Summoning Circle (16% za świecę), Haunted Mirror (7,5% na s.), Voodoo Doll i Ouija (5% za użycie)"],
+                ["Zdjęcie ducha / ghost event", "Summoning Circle, Music Box, karta Devil, życzenie „I wish to see the ghost”"],
+                ["Zdobyć dowód (EMF 5, UV)", "Voodoo Doll wymusza interakcje ducha"],
+                ["Wskrzesić gracza", "karta High Priestess, życzenie „I wish for life”"]
+            ];
+
+            const TAROT = [
+                ["The Tower (Wieża)", "interakcja ducha; podwaja aktywność ducha na 20 s (wpływa m.in. na DOTS i księgę)"],
+                ["The Wheel of Fortune (Koło Fortuny)", "zielony płomień: +25% sanity, czerwony: −25% (ok. 20% szans)"],
+                ["The Fool (Głupiec)", "brak efektu; udaje inną kartę, dopóki nie spłonie (ok. 17%). W trakcie polowania każda karta staje się Głupcem"],
+                ["The Devil (Diabeł)", "wywołuje ghost event"],
+                ["Death (Śmierć)", "zaczyna cursed hunt"],
+                ["The Hermit (Pustelnik)", "teleportuje ducha do ulubionego pokoju i unieruchamia go na ok. minutę"],
+                ["The High Priestess (Arcykapłanka)", "wskrzesza losowego martwego gracza (ok. 2%); gdy nikt nie zginął, następnego, który umrze"],
+                ["The Hanged Man (Wisielec)", "natychmiast zabija wyciągającego (ok. 1%)"],
+                ["The Sun (Słońce)", "sanity do 100%"],
+                ["The Moon (Księżyc)", "sanity do 0%"]
+            ];
+
+            const WISHES = [
+                ["I wish for sanity", "sanity wszystkich graczy = 50%. Cena: utrata sanity 1,5× szybsza do końca kontraktu, a ulubiony pokój ducha się zmienia"],
+                ["I wish to be safe", "wskazuje najbliższą kryjówkę. Cena: światła w pokoju gasną, a duch może Cię wyczuwać (źródła różnią się w szczegółach)"],
+                ["I wish to leave", "odblokowuje wyjścia, także w trakcie polowania"],
+                ["I wish to see the ghost", "ghost event w miejscu ducha, drzwi się zamykają; potem cursed hunt"],
+                ["I wish for activity", "podwaja aktywność ducha na 2 minuty. Cena (wg jednego źródła): zepsuty bezpiecznik i zamknięte drzwi na 2 minuty"],
+                ["I wish to trap the ghost", "zamyka ducha w ulubionym pokoju na 60 s, ale Ciebie też zamyka w pomieszczeniu. Jedno z bezpieczniejszych do zbierania dowodów"],
+                ["I wish for life", "wskrzesza martwego gracza, ale ma 50% szans zabić życzącego"],
+                ["I wish for knowledge", "skreśla jeden błędny dowód w dzienniku; zwykle kończy się polowaniem"],
+                ["I wish for (pogoda)", "clear sky / fog / rain / snow / sunrise. Cena: −25% sanity i chwilowa ślepota; wymaga min. 25% sanity"],
+                ["I wish for anything", "losowe życzenie spośród pozostałych, ze wszystkimi jego skutkami"]
+            ];
+
+            const ITEMS = [
+                {
+                    name: "OUIJA BOARD", icon: "🔤", color: "#00e5ff", tagline: "ZADAJ DUCHOWI PYTANIE",
+                    what: "Pytasz ducha głosem (lub z menu tekstowego) i dostajesz konkretną odpowiedź.",
+                    cost: "<b>5%</b> sanity za pytania o wiek, śmierć, uczucia czy Twoje sanity. <b>20%</b> za pytania o lokalizację („Where are you?”, „Where is the bone?”) i o obecność ducha.",
+                    use: [
+                        "Pytaj przy planszy. „Where are you?” podaje pokój, w którym duch jest teraz.",
+                        "Pytania o Twoje sanity są tanie i warto je zadać przed drogimi pytaniami.",
+                        "Na koniec <b>zawsze powiedz „Goodbye”</b> i poczekaj, aż planchette zniknie."
+                    ],
+                    hunt: [
+                        "Nie powiesz „Goodbye” albo odejdziesz od aktywnej planszy (nikt w pobliżu ok. 5 m).",
+                        "Rzucisz ją lub zmienisz przedmiot, gdy jest aktywna.",
+                        "Nie masz dość sanity na zadane pytanie: deska pęka zamiast odpowiedzieć.",
+                        "Zapytasz „Hide and seek?”: odliczanie 5 do 0, deska pęka (bez kosztu sanity)."
+                    ],
+                    tip: "Tanie pytania (5%) pozwalają dokładnie obniżać sanity, np. żeby testować próg ataku ducha."
+                },
+                {
+                    name: "HAUNTED MIRROR", icon: "🪞", color: "#c27bff", tagline: "PODGLĄD ULUBIONEGO POKOJU",
+                    what: "Pokazuje powolną panoramę ulubionego pokoju ducha razem z tym, co w nim jest. To pokój, a nie aktualna pozycja ducha.",
+                    cost: "<b>7,5% sanity na sekundę</b>, ale co najmniej <b>20% za użycie</b> (liczy się animacja podnoszenia).",
+                    use: [
+                        "Patrz krótko (2 do 3 sekund), potem użyj ponownie albo opuść lustro.",
+                        "Dobre do potwierdzenia pokoju bez chodzenia po całym domu."
+                    ],
+                    hunt: [
+                        "Twoje sanity spadnie do 0% podczas patrzenia.",
+                        "Użyjesz go przy sanity poniżej 20%.",
+                        "Po pęknięciu nie da się go już użyć."
+                    ],
+                    tip: "Użyj przy wysokim sanity i nie wpatruj się dłużej niż trzeba: lustro zawsze kosztuje co najmniej 20%."
+                },
+                {
+                    name: "MUSIC BOX", icon: "🎶", color: "#f9f002", tagline: "NAMIERZ DUCHA DŹWIĘKIEM",
+                    what: "Gdy gra, duch w promieniu ok. 20 m <b>śpiewa razem z nią</b> (pozostaje niewidoczny), więc słyszysz, gdzie jest.",
+                    cost: "ok. <b>2,5% sanity na sekundę</b> dla osób tuż obok. Cała piosenka to do ok. <b>75%</b>.",
+                    use: [
+                        "Możesz ją trzymać albo <b>postawić na podłodze</b> (to bezpieczny sposób odłożenia).",
+                        "Gdy duch jest w ok. 5 m, pojawia się i idzie w stronę pozytywki: dobra chwila na zdjęcie lub wideo.",
+                        "Poza budynkiem pozytywka się zamyka i nie działa."
+                    ],
+                    hunt: [
+                        "Upuścisz lub rzucisz ją, gdy gra (postawienie jest bezpieczne).",
+                        "Trzymający ma 0% sanity.",
+                        "Duch idzie w jej stronę dłużej niż 5 sekund albo jest tuż przy trzymającym."
+                    ],
+                    tip: "Włącz, postaw na ziemi, odejdź i słuchaj. Miej pod ręką kadzidło i znaną kryjówkę."
+                },
+                {
+                    name: "SUMMONING CIRCLE", icon: "🕯️", color: "#ff2bd6", tagline: "PRZYWOŁAJ DUCHA",
+                    what: "Po zapaleniu pięciu świec duch pojawia się w kręgu w pełnej formie i stoi nieruchomo ok. 5 s (ghost event, idealnie do zdjęcia). Potem zaczyna się <b>cursed hunt</b>.",
+                    cost: "<b>16% sanity za każdą świecę</b> dla pobliskich graczy, czyli <b>80%</b> za pięć. Ponowne zapalenie zgaszonej świecy znów kosztuje 16%.",
+                    use: [
+                        "Potrzebujesz zapalniczki (igniter) albo zapalonego firelight i zapalasz 5 czerwonych świec.",
+                        "Krąg jest nieruchomy i można go użyć tylko raz.",
+                        "Po ostatniej świecy drzwi wejściowe się zamykają. Duch może zdmuchnąć świece."
+                    ],
+                    hunt: [
+                        "Po 5 sekundach bezruchu duch zaczyna cursed hunt na miejscu.",
+                        "Ostatnią świecę zapalisz przy sanity poniżej 16%: polowanie zaczyna się od razu, bez ghost eventu."
+                    ],
+                    tip: "Według wiki krzyż Tier 3 w zasięgu kręgu zapobiega polowaniu po przywołaniu, ale koszt 80% sanity zostaje. Używaj po ustaleniu ducha."
+                },
+                {
+                    name: "TAROT CARDS", icon: "🃏", color: "#2dffc4", tagline: "TALIA 10 LOSOWYCH KART",
+                    what: "Losujesz karty z talii; każda ma efekt na Ciebie lub ducha. Talia ma 10 kart i znika po zużyciu (zrób zdjęcie wcześniej).",
+                    cost: "Brak stałego kosztu: ryzyko leży w losowaniu (od śmierci po pełne sanity).",
+                    use: [
+                        "Karty losujesz tylko w obszarze śledztwa.",
+                        "Kolor płomienia zdradza efekt (np. Koło Fortuny: zielony +25%, czerwony −25%).",
+                        "<b>Nie losuj w trakcie polowania</b>: każda karta zamienia się wtedy w Głupca bez efektu."
+                    ],
+                    hunt: [
+                        "Death zaczyna cursed hunt, a The Moon zostawia 0% sanity.",
+                        "The Hanged Man zabija wyciągającego natychmiast."
+                    ],
+                    table: TAROT,
+                    tip: "Szanse wylosowania są orientacyjne i mogły zmienić się w patchach."
+                },
+                {
+                    name: "VOODOO DOLL", icon: "🪡", color: "#ff4d5e", tagline: "WYMUŚ INTERAKCJE DUCHA",
+                    what: "Każde użycie wciska <b>losową szpilkę z 10</b> i zmusza ducha do interakcji (m.in. EMF 5 i źródła UV; nie wymusza Ghost Writing ani gaszenia ognia).",
+                    cost: "<b>5%</b> sanity za zwykłą szpilkę, <b>10%</b> za szpilkę w sercu.",
+                    use: [
+                        "Przydatna do szybkiego zdobycia EMF 5 lub UV.",
+                        "Słuchaj, skąd dochodzą interakcje, aby zawęzić pokój ducha.",
+                        "Używaj, gdy znasz już pokój i masz blisko kryjówkę."
+                    ],
+                    hunt: [
+                        "Szpilka w sercu: −10% sanity, natychmiastowy cursed hunt, a pozostałe szpilki też zostają wciśnięte.",
+                        "Użycie przy 0% sanity: wszystkie szpilki naraz i cursed hunt."
+                    ],
+                    tip: "Wciśnięcie wszystkich szpilek to do 50% sanity, więc miej tabletki."
+                },
+                {
+                    name: "MONKEY PAW", icon: "🖐️", color: "#ffb347", tagline: "ŻYCZENIA Z CENĄ",
+                    what: "Wypowiadasz życzenie zaczynające się od „I wish…” (głos lub menu tekstowe). Przy udanym życzeniu zwija się jeden palec łapy; gdy wszystkie są zwinięte, łapa jest zużyta.",
+                    cost: "Zależy od życzenia (lista poniżej). Liczba życzeń zależy od trudności: ok. 5, 4 lub 3.",
+                    use: [
+                        "Jeśli palec drgnie, ale się nie zwinie, życzenie jest nieprawidłowe.",
+                        "Bez mikrofonu zmień rozpoznawanie głosu na tekstowe w opcjach gry."
+                    ],
+                    hunt: [
+                        "„See the ghost”, „trap the ghost” i „knowledge” kończą się cursed huntem (w trybie Friendly ghost już nie)."
+                    ],
+                    table: WISHES,
+                    tip: "Przed ryzykownymi życzeniami postaw krzyż blisko pokoju ducha. „Trap the ghost” jest jednym z bezpieczniejszych do zbierania dowodów."
+                }
+            ];
+
+            /* ---------- rendering ---------- */
+            const slug = item => item.name.toLowerCase().replace(/\s+/g, "-");
+            const list = items => "<ul>" + items.map(item => `<li>${item}</li>`).join("") + "</ul>";
+            const table = rows => `<table class="c-table">` + rows.map(([a, b]) => `<tr><td>${a}</td><td>${b}</td></tr>`).join("") + `</table>`;
+
+            function card(item) {
+                return `
+                    <article class="cursed-card" id="${slug(item)}" style="--accent:${item.color}">
+                        <header>
+                            <span class="c-icon">${item.icon}</span>
+                            <div><h3>${item.name}</h3><div class="c-tagline">${item.tagline}</div></div>
+                        </header>
+                        <p class="c-what">${item.what}</p>
+                        <div class="c-cost"><label>KOSZT SANITY</label>${item.cost}</div>
+                        <h4>JAK UŻYWAĆ</h4>${list(item.use)}
+                        <h4 class="danger">KIEDY ZACZYNA SIĘ CURSED HUNT</h4>${list(item.hunt)}
+                        ${item.table ? `<h4>${item.name === "TAROT CARDS" ? "WSZYSTKIE KARTY" : "WSZYSTKIE ŻYCZENIA"}</h4>${table(item.table)}` : ""}
+                        <div class="c-tip">💡 ${item.tip}</div>
+                    </article>`;
+            }
+
+            function renderCursed() {
+                document.getElementById("cursed-root").innerHTML = `
+                    <nav class="jump">${ITEMS.map(item => `<a href="#${slug(item)}">${item.icon} ${item.name}</a>`).join("")}</nav>
+                    <div class="cursed-panel"><h2>JAK DZIAŁAJĄ PRZEKLĘTE PRZEDMIOTY</h2>${list(BASICS)}</div>
+                    <div class="cursed-panel"><h2>CZEGO POTRZEBUJESZ? WYBIERZ PRZEDMIOT</h2>${table(GOALS)}</div>
+                    <div class="cursed-grid">${ITEMS.map(card).join("")}</div>
+                    <p class="cursed-note">Źródła: wiki Phasmophobia (Fandom) oraz poradniki GameSpot i społeczności. Wartości mogą zmieniać się z aktualizacjami gry, więc sprawdzaj je w praktyce.</p>`;
+            }
+            renderCursed();
+        })();
+    </script>
+</body>
+</html>

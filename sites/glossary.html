@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <script>
+           (function () {
+                try {
+                    if (sessionStorage.getItem("gl-intro-seen")) return;           // intro already played in this tab
+                    sessionStorage.setItem("gl-storage-test", "1");                // if storage is blocked this throws -> no redirect (no loop)
+                    sessionStorage.removeItem("gl-storage-test");
+                    document.documentElement.style.visibility = "hidden";          // no flash of the page before the redirect
+                    location.replace("intro.html");
+                } catch (error) { /* storage blocked: just show the page */ }
+            })();
+        </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GHOSTLAB // SŁOWNIK</title>
+    <link rel="icon" type="image/x-icon" href="../icons/ghostlab.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+    <style>
+        /* ======== DESIGN TOKENS ======== */
+        :root {
+            --neon-blue: #00e5ff;
+            --mag: #ff2bd6;
+            --yel: #f9f002;
+            --ice-white: #d7f8ff;
+            --border-glow: rgba(0, 229, 255, 0.35);
+            --cut-s: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+        }
+
+        /* ======== BASE ======== */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            min-height: 100vh;
+            background-color: #02070c;
+            background-image:
+                radial-gradient(ellipse at 50% -15%, rgba(0, 229, 255, 0.22), transparent 55%),
+                radial-gradient(circle at 100% 100%, rgba(255, 43, 214, 0.16), transparent 45%),
+                linear-gradient(rgba(0, 229, 255, 0.06) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 229, 255, 0.06) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 48px 48px, 48px 48px;
+            background-attachment: fixed;
+            color: var(--ice-white);
+            font: 500 1.05rem 'Rajdhani', sans-serif;
+        }
+
+        /* scanlines */
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            z-index: 5;
+            pointer-events: none;
+            background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.22) 0 1px, transparent 1px 3px);
+            mix-blend-mode: multiply;
+        }
+
+        /* ======== LAYOUT ======== */
+        .page {
+            position: relative;
+            max-width: 1500px;
+            margin: 0 auto;
+            padding: 90px 32px 80px;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 22px;
+            left: 22px;
+            z-index: 10;
+            padding: 12px 18px;
+            background: var(--neon-blue);
+            color: #02070c;
+            text-decoration: none;
+            font: 700 0.8rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.1em;
+            clip-path: var(--cut-s);
+            transition: 0.2s;
+        }
+
+        .back-link:hover {
+            background: #fff;
+        }
+
+        .hero {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .hero::after {
+            content: '';
+            display: block;
+            height: 2px;
+            width: min(420px, 70%);
+            margin: 24px auto 0;
+            background: linear-gradient(90deg, transparent, var(--neon-blue), var(--mag), transparent);
+        }
+
+        .eyebrow {
+            font: 0.8rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.3em;
+            color: var(--neon-blue);
+        }
+
+        .hero h1 {
+            margin: 14px 0;
+            font: 900 clamp(2rem, 6.5vw, 4.2rem) 'Orbitron', sans-serif;
+            letter-spacing: 0.08em;
+            line-height: 1.15;
+            color: #fff;
+            text-shadow: 4px 0 var(--mag), -4px 0 var(--neon-blue), 0 0 40px rgba(0, 229, 255, 0.5);
+        }
+
+        .hero p {
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.5;
+            font-size: 1.15rem;
+            color: #9fd3de;
+        }
+
+        /* quick jump bar */
+        .jump {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 28px;
+        }
+
+        .jump a {
+            padding: 9px 14px;
+            border: 1px solid var(--border-glow);
+            color: var(--ice-white);
+            text-decoration: none;
+            font: 700 0.76rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.06em;
+            clip-path: var(--cut-s);
+            transition: 0.2s;
+        }
+
+        .jump a:hover {
+            background: var(--neon-blue);
+            border-color: var(--neon-blue);
+            color: #02070c;
+        }
+
+        .cursed-card {
+            scroll-margin-top: 20px;
+        }
+
+        /* ======== CURSED ITEMS GUIDE ======== */
+        .cursed-panel {
+            margin-bottom: 28px;
+            padding: 22px;
+            background: rgba(2, 12, 18, 0.78);
+            border: 1px solid rgba(0, 229, 255, 0.35);
+            border-left: 4px solid var(--neon-blue);
+        }
+
+        .cursed-panel h2 {
+            margin-bottom: 14px;
+            font: 900 1.15rem 'Orbitron', sans-serif;
+            letter-spacing: 0.08em;
+            color: #fff;
+        }
+
+        .cursed-panel ul,
+        .cursed-card ul {
+            margin: 0 0 4px 18px;
+            line-height: 1.5;
+            color: #c4e6ee;
+        }
+
+        .cursed-panel li,
+        .cursed-card li {
+            margin-bottom: 5px;
+        }
+
+        .cursed-panel b,
+        .cursed-card b {
+            color: var(--neon-blue);
+        }
+
+        .cursed-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(min(100%, 430px), 1fr));
+            gap: 26px;
+        }
+
+        .cursed-card {
+            --accent: var(--neon-blue);
+            display: flex;
+            flex-direction: column;
+            max-height: 620px; /* change this to make all cards taller/shorter */
+            padding: 22px;
+            background: rgba(2, 12, 18, 0.82);
+            border: 1px solid rgba(0, 229, 255, 0.3);
+            border-left: 4px solid var(--accent);
+        }
+
+        /* Scrollable part of the card (header above it stays pinned) */
+        .c-body {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            scrollbar-width: none; /* hide scrollbar (Firefox) */
+            -ms-overflow-style: none;
+        }
+
+        .c-body::-webkit-scrollbar {
+            display: none; /* hide scrollbar (Chrome, Edge, Safari) */
+        }
+
+        .cursed-card header {
+            flex: none;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 12px;
+        }
+
+        .c-icon {
+            display: grid;
+            place-items: center;
+            width: 50px;
+            height: 50px;
+            font-size: 1.6rem;
+            border: 1px solid var(--accent);
+            box-shadow: 0 0 16px color-mix(in srgb, var(--accent) 40%, transparent);
+        }
+
+        .cursed-card h3 {
+            font: 900 1.2rem 'Orbitron', sans-serif;
+            letter-spacing: 0.06em;
+            color: #fff;
+            text-shadow: 2px 0 var(--accent);
+        }
+
+        .c-tagline {
+            font: 0.78rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.1em;
+            color: var(--accent);
+        }
+
+        .c-what {
+            margin-bottom: 12px;
+            line-height: 1.5;
+            color: #e3f6fb;
+        }
+
+        .c-cost {
+            margin-bottom: 14px;
+            padding: 9px 12px;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px dashed var(--accent);
+            font-size: 0.95rem;
+        }
+
+        .c-cost label,
+        .cursed-card h4 {
+            display: block;
+            margin: 14px 0 6px;
+            font: 0.72rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.18em;
+            color: var(--accent);
+        }
+
+        .c-cost label {
+            margin: 0 0 3px;
+        }
+
+        .cursed-card h4.danger {
+            color: #ff4d6d;
+        }
+
+        .c-tip {
+            margin-top: 14px;
+            padding: 10px 12px;
+            background: rgba(249, 240, 2, 0.07);
+            border-left: 3px solid var(--yel);
+            line-height: 1.45;
+            color: #f5f3b0;
+        }
+
+        .c-table {
+            width: 100%;
+            margin-top: 6px;
+            border-collapse: collapse;
+            font-size: 0.92rem;
+            line-height: 1.4;
+        }
+
+        .c-table td {
+            padding: 6px 8px;
+            border-bottom: 1px solid rgba(0, 229, 255, 0.15);
+            vertical-align: top;
+            color: #c4e6ee;
+        }
+
+        .c-table td:first-child {
+            width: 34%;
+            font-weight: 700;
+            color: var(--accent, var(--neon-blue));
+        }
+
+        .cursed-note {
+            margin-top: 26px;
+            font: 0.75rem 'Share Tech Mono', monospace;
+            line-height: 1.6;
+            color: #5f97a4;
+        }
+    
+
+
+        /* ======== GLOSSARY (extras) ======== */
+        .g-search {
+            display: block;
+            width: min(560px, 100%);
+            margin: 0 auto 22px;
+            padding: 13px 16px;
+            background: rgba(2, 12, 18, 0.85);
+            border: 1px solid var(--border-glow);
+            color: var(--ice-white);
+            font: 500 1rem 'Share Tech Mono', monospace;
+            outline: none;
+            clip-path: var(--cut-s);
+        }
+
+        .g-search:focus {
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 16px rgba(0, 229, 255, 0.35);
+        }
+
+        .g-list {
+            list-style: none;
+            margin: 0;
+            columns: 2 480px;
+            column-gap: 40px;
+        }
+
+        .g-list li {
+            break-inside: avoid;
+            margin-bottom: 14px;
+            line-height: 1.5;
+            color: #c4e6ee;
+        }
+
+        .g-en {
+            color: #9fd3de;
+            font-weight: 600;
+        }
+
+        /* each section box has its own accent color (set inline as --accent) */
+        .cursed-panel {
+            --accent: var(--neon-blue);
+            border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+            border-left: 4px solid var(--accent);
+        }
+
+        .cursed-panel h2 {
+            text-shadow: 2px 0 var(--accent);
+        }
+
+        .cursed-panel b {
+            color: var(--accent);
+        }
+
+        .jump a.g-chip {
+            background: color-mix(in srgb, var(--accent) 22%, transparent);
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            box-shadow: 0 0 14px color-mix(in srgb, var(--accent) 35%, transparent);
+        }
+
+        .jump a.g-chip:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #02070c;
+        }
+
+        .g-list a {
+            color: var(--accent);
+            text-decoration: underline dotted;
+            text-underline-offset: 3px;
+        }
+
+        .g-list a:hover {
+            color: #fff;
+        }
+
+        .cursed-panel {
+            scroll-margin-top: 20px;
+        }
+
+        .g-empty {
+            display: none;
+            padding: 26px;
+            text-align: center;
+            font: 0.9rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.08em;
+            color: #5f97a4;
+        }
+
+        @media (max-width: 700px) {
+            .page {
+                padding: 80px 14px 60px;
+            }
+
+            .cursed-card {
+                max-height: 80vh;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- If you rename the main page, change this link -->
+    <a class="back-link" href="index.html">← POWRÓT DO GHOSTLAB</a>
+
+    <main class="page">
+        <header class="hero">
+            <div class="eyebrow">[ BEGINNER DATABASE // GLOSSARY ]</div>
+            <h1>SŁOWNIK</h1>
+            <p>Najważniejsze pojęcia dla początkujących: polska nazwa (angielska nazwa) - wyjaśnienie. Wpisz słowo w wyszukiwarkę albo przewiń stronę.</p>
+        </header>
+
+        <div id="gloss-root"></div>
+    </main>
+
+    <script>
+        "use strict";
+
+        /* ==========================================================================
+           BEGINNER GLOSSARY
+           Format of every entry: [ "Polish name", "English name", "Explanation" ]
+           Add or edit terms in the lists below - the page builds itself from them.
+           ========================================================================== */
+        (function () {
+            "use strict";
+
+            const SECTIONS = [
+                {
+                    id: "podstawy", title: "PODSTAWY", color: "#f9f002", terms: [
+                        ["Kontrakt", "Contract", "Pojedyncze zlecenie: wchodzisz do nawiedzonego miejsca, zbierasz dowody i wskazujesz w dzienniku typ ducha."],
+                        ["Duch", "Ghost", "Istota nawiedzająca lokację. Każdy typ ma własne zachowania, prędkość i słabości (karty duchów znajdziesz na stronie głównej)."],
+                        ["Furgonetka", "Van", "Twoja baza przed domem: są w niej monitory z kamer i czujników oraz sprzęt wybrany na kontrakt."],
+                        ["Dziennik", "Journal", "Notatnik, w którym zaznaczasz zebrane dowody i wybierasz typ ducha. Pomaga zawęzić listę podejrzanych."],
+                        ["Pokój ducha", "Ghost room / Favourite room", "Pokój, w którym duch spędza najwięcej czasu. Zwykle jest tam najzimniej i najwięcej aktywności."],
+                        ["Skrzynka bezpieczników", "Breaker / Fuse box", "Włącza prąd w domu. Bez prądu jest ciemno, a sanity spada szybciej. Duch potrafi ją wyłączyć."],
+                        ["Poziom trudności", "Difficulty", "Zmienia m.in. liczbę potrzebnych dowodów, tempo utraty sanity i zachowanie ducha. Na standardowych poziomach potrzeba 3 dowodów, na Nightmare 2."],
+                        ["Cel opcjonalny", "Optional objective", "Dodatkowe zadanie na kontrakcie (np. zrobienie zdjęcia ducha). Daje dodatkowe pieniądze."]
+                    ]
+                },
+                {
+                    id: "dowody", title: "DOWODY", color: "#b388ff", terms: [
+                        ["Dowód", "Evidence", "Ślad zostawiany przez ducha. Zebranie kilku dowodów pozwala wskazać jego typ."],
+                        ["Pole EMF poziomu 5", "EMF Level 5", "Najwyższy odczyt miernika EMF. Tylko poziom 5 liczy się jako dowód."],
+                        ["Radio duchów", "Spirit Box", "Dowód: duch odpowiada na pytania przez radio (zadawaj je w pokoju ducha, przy zgaszonym świetle)."],
+                        ["Pisanie duchów", "Ghost Writing", "Dowód: duch pisze lub rysuje w zeszycie."],
+                        ["Sylwetka D.O.T.S.", "D.O.T.S.", "Dowód: w zielonych laserach projektora widać sylwetkę ducha."],
+                        ["Ujemne temperatury", "Freezing Temperatures", "Dowód: odczyt poniżej 0°C w pokoju ducha."],
+                        ["Ultrafiolet", "Ultraviolet", "Dowód: odciski palców lub ślady stóp, które świecą w świetle UV."],
+                        ["Kule duchów", "Ghost Orbs", "Dowód: świetlne kule widoczne w trybie nocnym kamery w ciemnym pokoju."],
+                        ["Strategia 0-evidence", "Zero-evidence", "Rozpoznawanie ducha po zachowaniu (prędkość, interakcje, reakcje) zamiast po dowodach. Wskazówki są na kartach duchów w GhostLab."]
+                    ]
+                },
+                {
+                    id: "duch", title: "DUCH I POLOWANIE", color: "#ff4d6d", terms: [
+                        ["Polowanie", "Hunt", "Duch zaczyna aktywnie ścigać graczy. Ukryj się i nie biegaj bez potrzeby, a elektronika zaczyna zakłócać się wokół ducha."],
+                        ["Próg polowania", "Hunt threshold", "Poziom średniego sanity drużyny, poniżej którego duch może rozpocząć polowanie. Zależy od typu ducha."],
+                        ["Cooldown polowania", "Hunt cooldown", "Przerwa po polowaniu, w której duch nie zaczyna kolejnego. W GhostLab odliczasz ją w Hunt Tracker (zwykle 25 s, a dla demona 20 s)."],
+                        ["Linia widzenia", "Line of sight", "Sytuacja, gdy duch widzi gracza podczas polowania. Niektóre duchy wtedy przyspieszają."],
+                        ["Interakcja ducha", "Ghost interaction", "Ruch drzwi, gaszenie światła, rzucanie przedmiotami itp. Zostawia ślady na mierniku EMF."],
+                        ["Wydarzenie duchowe", "Ghost event", "Nagłe zjawisko, np. pojawienie się ducha. Patrzenie na nie obniża sanity."],
+                        ["Prędkość ducha", "Ghost speed", "Szybkość w metrach na sekundę. Pomaga rozpoznać typ ducha. Możesz ją zmierzyć w Speed Detector (BPM) w GhostLab."],
+                        ["Zakłócenia elektroniki", "Electronic interference", "Migotanie lub wyłączanie sprzętu, gdy duch jest blisko podczas polowania."],
+                        ["Pętlowanie", "Looping", "Uciekanie wokół przeszkody (stołu, ściany), by zgubić ducha. Wymaga dobrej znajomości mapy."],
+                        ["Kryjówka", "Hiding spot", "Miejsce, w którym przeczekujesz polowanie, np. szafa albo zamknięty pokój."],
+                        ["Przeklęty przedmiot", "Cursed possession", "Specjalny przedmiot na mapie, który daje efekt za cenę ryzyka (szczegóły w <a href=\"cursed.html\">przewodniku po przeklętych przedmiotach</a>)."],
+                        ["Przeklęte polowanie", "Cursed hunt", "Polowanie wywołane użyciem przeklętego przedmiotu. Zwykły krucyfiks go nie powstrzyma, dopiero Tier III potrafi powstrzymać jedno."]
+                    ]
+                },
+                {
+                    id: "sanity", title: "SANITY I OCHRONA", color: "#39ff88", terms: [
+                        ["Poczytalność", "Sanity", "Pasek psychiki gracza. Spada w ciemności i przy zjawiskach. Im niższa średnia drużyny, tym większa szansa na polowanie."],
+                        ["Pasywna utrata sanity", "Passive sanity drain", "Powolny spadek sanity w ciemności. Zmniejszają go światło i Firelight."],
+                        ["Okadzanie", "Smudging", "Użycie kadzidła blisko ducha. Blokuje polowania na czas zależny od typu ducha (timery w GhostLab: demon 60 s, zwykły duch 90 s, Spirit 180 s)."],
+                        ["Krucyfiks", "Crucifix", "Przedmiot, który zapobiega rozpoczęciu polowania, gdy duch jest w jego zasięgu. Zużywa się przy użyciu."],
+                        ["Sól", "Salt", "Duch zostawia w niej ślady stóp, które widać w świetle UV."],
+                        ["Tabletki", "Sanity Medication", "Przywracają sanity w czasie. Zużywają się po użyciu."],
+                        ["Kadzidło", "Incense", "Przedmiot do okadzania. Do zapalenia potrzebna jest zapalniczka (Igniter)."]
+                    ]
+                },
+                {
+                    id: "sprzet", title: "SPRZĘT I POSTĘP", color: "#ff9f1c", terms: [
+                        ["Zestaw", "Loadout", "Sprzęt wybrany w lobby i załadowany do furgonetki przed kontraktem. Obowiązują limity sztuk (zobacz <a href=\"equipment.html\">przewodnik po sprzęcie</a>)."],
+                        ["Sprzęt startowy", "Starter equipment", "Osiem narzędzi dostępnych od początku: D.O.T.S., EMF Reader, Flashlight, Ghost Writing Book, Spirit Box, Thermometer, UV Light i Video Camera."],
+                        ["Tier (poziom ulepszenia)", "Tier", "Jeden z trzech wariantów sprzętu (I, II, III). Wyższy działa lepiej. Ulepszenie odblokowujesz raz w sklepie, a wzięcie przedmiotu na kontrakt kosztuje tyle samo."],
+                        ["Poziom profilu", "Level", "Rośnie z doświadczeniem. Odblokowuje nowe przedmioty i wyższe tiery."],
+                        ["Prestiż", "Prestige", "Dobrowolny reset postępu. Po nim odblokowane tiery sprzętu trzeba kupić od nowa."]
+                    ]
+                }
+            ];
+
+            const total = SECTIONS.reduce((n, s) => n + s.terms.length, 0);
+            const norm = text => text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ł/g, "l");
+
+            const entry = ([pl, en, text]) =>
+                `<li data-search="${norm(pl + " " + en + " " + text.replace(/<[^>]+>/g, ""))}"><b>${pl}</b> <span class="g-en">(${en})</span> - ${text}</li>`;
+
+            function renderGlossary() {
+                document.getElementById("gloss-root").innerHTML = `
+                    <input class="g-search" id="g-search" type="search" placeholder="🔎 Szukaj terminu (${total})..." autocomplete="off">
+                    <nav class="jump">${SECTIONS.map(s => `<a class="g-chip" style="--accent:${s.color}" href="#${s.id}">${s.title}</a>`).join("")}</nav>
+                    ${SECTIONS.map(s => `
+                        <section class="cursed-panel" id="${s.id}" style="--accent:${s.color}">
+                            <h2>${s.title}</h2>
+                            <ul class="g-list">${s.terms.map(entry).join("")}</ul>
+                        </section>`).join("")}
+                    <div class="g-empty" id="g-empty">BRAK WYNIKÓW</div>
+                    <p class="cursed-note">Źródła: wiki Phasmophobia (Fandom) oraz poradniki społeczności. Wartości mogą zmieniać się z aktualizacjami gry, więc sprawdzaj je w praktyce.</p>`;
+
+                const input = document.getElementById("g-search");
+                const panels = document.querySelectorAll("section.cursed-panel");
+                const empty = document.getElementById("g-empty");
+                input.addEventListener("input", () => {
+                    const q = norm(input.value.trim());
+                    let shown = 0;
+                    panels.forEach(panel => {
+                        let any = 0;
+                        panel.querySelectorAll("li").forEach(li => {
+                            const ok = !q || li.dataset.search.includes(q);
+                            li.style.display = ok ? "" : "none";
+                            if (ok) any++;
+                        });
+                        panel.style.display = any ? "" : "none";
+                        shown += any;
+                    });
+                    empty.style.display = shown ? "none" : "block";
+                });
+            }
+            renderGlossary();
+        })();
+    </script>
+</body>
+</html>

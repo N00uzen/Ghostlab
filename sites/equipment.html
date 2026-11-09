@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <script>
+            /* First visit in this tab: play intro.html, which always continues to index.html when it is done.
+               intro.html sets "gl-intro-seen" right before it leaves, so this never loops. */
+            (function () {
+                try {
+                    if (sessionStorage.getItem("gl-intro-seen")) return;           // intro already played in this tab
+                    sessionStorage.setItem("gl-storage-test", "1");                // if storage is blocked this throws -> no redirect (no loop)
+                    sessionStorage.removeItem("gl-storage-test");
+                    document.documentElement.style.visibility = "hidden";          // no flash of the page before the redirect
+                    location.replace("intro.html");
+                } catch (error) { /* storage blocked: just show the page */ }
+            })();
+        </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GHOSTLAB // SPRZĘT</title>
+    <link rel="icon" type="image/x-icon" href="../icons/ghostlab.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+    <style>
+        /* ======== DESIGN TOKENS ======== */
+        :root {
+            --neon-blue: #00e5ff;
+            --mag: #ff2bd6;
+            --yel: #f9f002;
+            --ice-white: #d7f8ff;
+            --border-glow: rgba(0, 229, 255, 0.35);
+            --cut-s: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+        }
+
+        /* ======== BASE ======== */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            min-height: 100vh;
+            background-color: #02070c;
+            background-image:
+                radial-gradient(ellipse at 50% -15%, rgba(0, 229, 255, 0.22), transparent 55%),
+                radial-gradient(circle at 100% 100%, rgba(255, 43, 214, 0.16), transparent 45%),
+                linear-gradient(rgba(0, 229, 255, 0.06) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 229, 255, 0.06) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 48px 48px, 48px 48px;
+            background-attachment: fixed;
+            color: var(--ice-white);
+            font: 500 1.05rem 'Rajdhani', sans-serif;
+        }
+
+        /* scanlines */
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            z-index: 5;
+            pointer-events: none;
+            background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.22) 0 1px, transparent 1px 3px);
+            mix-blend-mode: multiply;
+        }
+
+        /* ======== LAYOUT ======== */
+        .page {
+            position: relative;
+            max-width: 1500px;
+            margin: 0 auto;
+            padding: 90px 32px 80px;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 22px;
+            left: 22px;
+            z-index: 10;
+            padding: 12px 18px;
+            background: var(--neon-blue);
+            color: #02070c;
+            text-decoration: none;
+            font: 700 0.8rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.1em;
+            clip-path: var(--cut-s);
+            transition: 0.2s;
+        }
+
+        .back-link:hover {
+            background: #fff;
+        }
+
+        .hero {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .hero::after {
+            content: '';
+            display: block;
+            height: 2px;
+            width: min(420px, 70%);
+            margin: 24px auto 0;
+            background: linear-gradient(90deg, transparent, var(--neon-blue), var(--mag), transparent);
+        }
+
+        .eyebrow {
+            font: 0.8rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.3em;
+            color: var(--neon-blue);
+        }
+
+        .hero h1 {
+            margin: 14px 0;
+            font: 900 clamp(2rem, 6.5vw, 4.2rem) 'Orbitron', sans-serif;
+            letter-spacing: 0.08em;
+            line-height: 1.15;
+            color: #fff;
+            text-shadow: 4px 0 var(--mag), -4px 0 var(--neon-blue), 0 0 40px rgba(0, 229, 255, 0.5);
+        }
+
+        .hero p {
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.5;
+            font-size: 1.15rem;
+            color: #9fd3de;
+        }
+
+        /* quick jump bar */
+        .jump {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 28px;
+        }
+
+        .jump a {
+            padding: 9px 14px;
+            border: 1px solid var(--border-glow);
+            color: var(--ice-white);
+            text-decoration: none;
+            font: 700 0.76rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.06em;
+            clip-path: var(--cut-s);
+            transition: 0.2s;
+        }
+
+        .jump a:hover {
+            background: var(--neon-blue);
+            border-color: var(--neon-blue);
+            color: #02070c;
+        }
+
+        .cursed-card {
+            scroll-margin-top: 20px;
+        }
+
+        /* ======== CURSED ITEMS GUIDE ======== */
+        .cursed-panel {
+            margin-bottom: 28px;
+            padding: 22px;
+            background: rgba(2, 12, 18, 0.78);
+            border: 1px solid rgba(0, 229, 255, 0.35);
+            border-left: 4px solid var(--neon-blue);
+        }
+
+        .cursed-panel h2 {
+            margin-bottom: 14px;
+            font: 900 1.15rem 'Orbitron', sans-serif;
+            letter-spacing: 0.08em;
+            color: #fff;
+        }
+
+        .cursed-panel ul,
+        .cursed-card ul {
+            margin: 0 0 4px 18px;
+            line-height: 1.5;
+            color: #c4e6ee;
+        }
+
+        .cursed-panel li,
+        .cursed-card li {
+            margin-bottom: 5px;
+        }
+
+        .cursed-panel b,
+        .cursed-card b {
+            color: var(--neon-blue);
+        }
+
+        .cursed-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(min(100%, 430px), 1fr));
+            gap: 26px;
+        }
+
+        .cursed-card {
+            --accent: var(--neon-blue);
+            display: flex;
+            flex-direction: column;
+            max-height: 620px; /* change this to make all cards taller/shorter */
+            padding: 22px;
+            background: rgba(2, 12, 18, 0.82);
+            border: 1px solid rgba(0, 229, 255, 0.3);
+            border-left: 4px solid var(--accent);
+        }
+
+        /* Scrollable part of the card (header above it stays pinned) */
+        .c-body {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            scrollbar-width: none; /* hide scrollbar (Firefox) */
+            -ms-overflow-style: none;
+        }
+
+        .c-body::-webkit-scrollbar {
+            display: none; /* hide scrollbar (Chrome, Edge, Safari) */
+        }
+
+        .cursed-card header {
+            flex: none;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 12px;
+        }
+
+        .c-icon {
+            display: grid;
+            place-items: center;
+            width: 50px;
+            height: 50px;
+            font-size: 1.6rem;
+            border: 1px solid var(--accent);
+            box-shadow: 0 0 16px color-mix(in srgb, var(--accent) 40%, transparent);
+        }
+
+        .cursed-card h3 {
+            font: 900 1.2rem 'Orbitron', sans-serif;
+            letter-spacing: 0.06em;
+            color: #fff;
+            text-shadow: 2px 0 var(--accent);
+        }
+
+        .c-tagline {
+            font: 0.78rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.1em;
+            color: var(--accent);
+        }
+
+        .c-what {
+            margin-bottom: 12px;
+            line-height: 1.5;
+            color: #e3f6fb;
+        }
+
+        .c-cost {
+            margin-bottom: 14px;
+            padding: 9px 12px;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px dashed var(--accent);
+            font-size: 0.95rem;
+        }
+
+        .c-cost label,
+        .cursed-card h4 {
+            display: block;
+            margin: 14px 0 6px;
+            font: 0.72rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.18em;
+            color: var(--accent);
+        }
+
+        .c-cost label {
+            margin: 0 0 3px;
+        }
+
+        .cursed-card h4.danger {
+            color: #ff4d6d;
+        }
+
+        .c-tip {
+            margin-top: 14px;
+            padding: 10px 12px;
+            background: rgba(249, 240, 2, 0.07);
+            border-left: 3px solid var(--yel);
+            line-height: 1.45;
+            color: #f5f3b0;
+        }
+
+        .c-table {
+            width: 100%;
+            margin-top: 6px;
+            border-collapse: collapse;
+            font-size: 0.92rem;
+            line-height: 1.4;
+        }
+
+        .c-table td {
+            padding: 6px 8px;
+            border-bottom: 1px solid rgba(0, 229, 255, 0.15);
+            vertical-align: top;
+            color: #c4e6ee;
+        }
+
+        .c-table td:first-child {
+            width: 34%;
+            font-weight: 700;
+            color: var(--accent, var(--neon-blue));
+        }
+
+        .cursed-note {
+            margin-top: 26px;
+            font: 0.75rem 'Share Tech Mono', monospace;
+            line-height: 1.6;
+            color: #5f97a4;
+        }
+    
+
+
+        /* ======== EQUIPMENT GUIDE (extras) ======== */
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 28px;
+        }
+
+        .filters button {
+            padding: 9px 14px;
+            border: 1px solid var(--border-glow);
+            background: transparent;
+            color: var(--ice-white);
+            cursor: pointer;
+            font: 700 0.76rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.06em;
+            clip-path: var(--cut-s);
+            transition: 0.2s;
+        }
+
+        .filters button:hover,
+        .filters button.active {
+            background: var(--neon-blue);
+            border-color: var(--neon-blue);
+            color: #02070c;
+        }
+
+        .cursed-card.is-hidden {
+            display: none;
+        }
+
+        .t-meta {
+            display: block;
+            margin-top: 2px;
+            font: 500 0.78rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.04em;
+            color: #7fb4c0;
+        }
+
+        .cursed-panel a,
+        .c-table a {
+            color: var(--neon-blue);
+            text-decoration: underline dotted;
+            text-underline-offset: 3px;
+        }
+
+        .cursed-panel a:hover,
+        .c-table a:hover {
+            color: #fff;
+        }
+
+        .cursed-panel ol {
+            margin: 0 0 4px 22px;
+            line-height: 1.5;
+            color: #c4e6ee;
+        }
+
+        .cursed-panel ol li {
+            margin-bottom: 5px;
+        }
+
+        @media (max-width: 700px) {
+            .page {
+                padding: 80px 14px 60px;
+            }
+
+            .cursed-card {
+                max-height: 80vh;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- If you rename the main page, change this link -->
+    <a class="back-link" href="index.html">← POWRÓT DO GHOSTLAB</a>
+
+    <main class="page">
+        <header class="hero">
+            <div class="eyebrow">[ EQUIPMENT ARCHIVE // FIELD MANUAL ]</div>
+            <h1>SPRZĘT</h1>
+            <p>21 narzędzi: do czego służą, ile kosztują i co zmieniają kolejne tiery. Filtruj kategorie albo przewiń stronę.</p>
+        </header>
+
+        <div id="equip-root"></div>
+    </main>
+
+    <script>
+        "use strict";
+
+        /* ==========================================================================
+           EQUIPMENT GUIDE
+           Prices, levels and tier stats come from community wikis and guides.
+           Numbers can change with game updates - edit the lists below to keep it current.
+           Tier rows: [ "meta line (level / upgrade cost)", "what this tier does" ]
+           ========================================================================== */
+        (function () {
+            "use strict";
+
+            const CATS = {
+                dowody:     { label: "DOWODY",          color: "#00e5ff" },
+                monitoring: { label: "MONITORING",      color: "#b388ff" },
+                ochrona:    { label: "OCHRONA",         color: "#ff4d6d" },
+                swiatlo:    { label: "ŚWIATŁO I OGIEŃ", color: "#f9f002" }
+            };
+
+            const BASICS = [
+                "Każdy przedmiot ma <b>3 tiery</b>. Wzięcie przedmiotu na kontrakt kosztuje tyle samo na każdym tierze, a płacisz tylko jednorazowo za <b>odblokowanie ulepszenia</b> w sklepie w lobby.",
+                "Wyższe tiery odblokowują się wraz z <b>poziomem profilu</b>. Pieniądze na ulepszenia zarabiasz na kontraktach (w tym na celach opcjonalnych).",
+                "<b>Prestiż resetuje odblokowane tiery</b> – po prestiżu trzeba je kupić od nowa.",
+                "W rękach nosisz <b>3 przedmioty</b>, a z <b>Head Gear</b> – 4. Dla wielu przedmiotów obowiązuje też limit sztuk na kontrakt (podany na karcie).",
+                "Na start masz 8 narzędzi: <b>D.O.T.S., EMF Reader, Flashlight, Ghost Writing Book, Spirit Box, Thermometer, UV Light i Video Camera</b>. Resztę odblokowujesz poziomami.",
+                "Zużywają się przy użyciu: <b>Crucifix, Salt, Sanity Medication</b> oraz pierwsze tiery <b>Firelight, Igniter i Incense</b> – trzeba je dokupić przed kolejnym kontraktem."
+            ];
+
+            const ORDER = [
+                "<b>Crucifix</b> (poz. 7) i <b>Sanity Medication</b> (poz. 14) – podstawowa ochrona przed polowaniem i utratą sanity.",
+                "<b>Motion Sensor</b> lub <b>Sound Sensor</b> – łatwiej znaleźć pokój ducha bez chodzenia po całym domu.",
+                "<b>Photo Camera</b> – tania i daje dodatkowe pieniądze na kolejne ulepszenia.",
+                "Ulepsz do Tier II narzędzia, których używasz najczęściej (np. <b>Thermometer, EMF Reader, UV Light</b>).",
+                "Dopiero potem drogie ulepszenia, np. <b>Crucifix Tier III</b> (20 000 $)."
+            ];
+
+            const GOALS = [
+                ["Znaleźć pokój ducha", "Thermometer, Motion Sensor, Sound Sensor, Parabolic Microphone, EMF Reader"],
+                ["Dowód: EMF Level 5", "EMF Reader"],
+                ["Dowód: Spirit Box", "Spirit Box"],
+                ["Dowód: Ghost Writing", "Ghost Writing Book"],
+                ["Dowód: D.O.T.S.", "D.O.T.S. Projector (oraz Video Camera)"],
+                ["Dowód: Freezing Temperatures", "Thermometer"],
+                ["Dowód: Ultraviolet", "UV Light (oraz Salt do śladów stóp)"],
+                ["Dowód: Ghost Orbs", "Video Camera (oraz Tripod)"],
+                ["Przetrwać polowanie", "Crucifix, Incense, Salt, Flashlight"],
+                ["Spowolnić utratę sanity", "Flashlight, Firelight, Sanity Medication"],
+                ["Zarobić dodatkowe pieniądze", "Photo Camera, Sound Recorder"]
+            ];
+
+            const ITEMS = [
+                /* ---------------- DOWODY ---------------- */
+                {
+                    name: "D.O.T.S. Projector", icon: "🟢", cat: "dowody", price: "$65", max: 2, start: true,
+                    tagline: "LASERY DO DOWODU D.O.T.S.",
+                    what: "Rzuca zielone punkty lasera. Gdy duch z dowodem D.O.T.S. przejdzie przez nie, widać jego sylwetkę.",
+                    use: [
+                        "Postaw w pokoju ducha tak, by laser obejmował przejścia i środek pomieszczenia.",
+                        "Sylwetkę zobaczysz bezpośrednio w pokoju albo na obrazie z kamery."
+                    ],
+                    tiers: [
+                        ["od startu", "Ręczny laser z wąskim polem do 5 m; można go też postawić."],
+                        ["poz. 27 · $3 000", "Stawiany projektor, światło obszarowe o zasięgu 2,5 m."],
+                        ["poz. 49 · $3 000", "Stawiany projektor, szerokie pole 7 m, skanuje automatycznie."]
+                    ]
+                },
+                {
+                    name: "EMF Reader", icon: "📟", cat: "dowody", price: "$45", max: 2, start: true,
+                    tagline: "POZIOM 5 = DOWÓD",
+                    what: "Mierzy ślady elektromagnetyczne zostawiane przy interakcjach ducha. Odczyt na poziomie 5 to dowód EMF Level 5.",
+                    use: [
+                        "Trzymaj go przy drzwiach, włącznikach i przedmiotach, z którymi duch wchodzi w interakcję.",
+                        "Odczyty 2–4 oznaczają zwykłą interakcję – dowodem jest dopiero poziom 5."
+                    ],
+                    tiers: [
+                        ["od startu", "Analogowy miernik o niskiej dokładności, zasięg 1,7 m; sygnalizuje igłą i kliknięciami."],
+                        ["poz. 18 · $3 000", "Średnia dokładność, zasięg 2 m, dźwiękowy wskaźnik."],
+                        ["poz. 46 · $4 500", "Wysoka dokładność, zasięg 3,5 m, wyświetlacz z kierunkiem i odległością; śledzi do trzech odczytów."]
+                    ]
+                },
+                {
+                    name: "Ghost Writing Book", icon: "📖", cat: "dowody", price: "$40", max: 2, start: true,
+                    tagline: "DOWÓD GHOST WRITING",
+                    what: "Zeszyt, w którym duch może pisać lub rysować. Wystarczy to do dowodu Ghost Writing.",
+                    use: [
+                        "Zostaw w pokoju ducha, najlepiej tam, gdzie duch lubi się kręcić, i wróć sprawdzić po chwili.",
+                        "Limit to 2 sztuki – rozłóż je w różnych częściach pokoju."
+                    ],
+                    tiers: [
+                        ["od startu", "Zasięg interakcji 3 m, niska szansa na zapis."],
+                        ["poz. 23 · $3 000", "Zasięg 4 m, średnia szansa na zapis."],
+                        ["poz. 55 · $3 000", "Zasięg 5 m, wysoka szansa na zapis."]
+                    ]
+                },
+                {
+                    name: "Spirit Box", icon: "📻", cat: "dowody", price: "$50", max: 2, start: true,
+                    tagline: "ROZMOWA Z DUCHEM",
+                    what: "Radio, przez które duch może odpowiedzieć na pytania. Odpowiedź to dowód Spirit Box.",
+                    use: [
+                        "Wyłącz światło i zadawaj pytania w pokoju ducha.",
+                        "Pytaj krótko i wyraźnie (np. „Where are you?”), po każdym pytaniu zostaw chwilę ciszy."
+                    ],
+                    tiers: [
+                        ["od startu", "Zasięg 3 m, niska jakość dźwięku i niska szansa odpowiedzi."],
+                        ["poz. 23 · $3 000", "Zasięg 4 m, średnia jakość i szansa odpowiedzi; dodaje ekran."],
+                        ["poz. 46 · $3 000", "Zasięg 5 m, wysoka jakość dźwięku i szansa odpowiedzi."]
+                    ]
+                },
+                {
+                    name: "Thermometer", icon: "🌡️", cat: "dowody", price: "$30", max: 2, start: true,
+                    tagline: "ZIMNO = POKÓJ DUCHA",
+                    what: "Mierzy temperaturę pomieszczeń. Służy do znajdowania pokoju ducha i dowodu Freezing Temperatures.",
+                    use: [
+                        "Sprawdzaj kolejne pokoje – najzimniejszy zwykle jest pokojem ducha.",
+                        "Odczyt poniżej 0°C to dowód Freezing Temperatures."
+                    ],
+                    tiers: [
+                        ["od startu", "Pasywny termometr (nieelektroniczny): niska dokładność i wolne próbkowanie."],
+                        ["poz. 27 · $3 000", "Średnia dokładność i szybkość próbkowania, staje się elektroniczny."],
+                        ["poz. 65 · $3 000", "Elektroniczny, wysoka dokładność i szybsze próbkowanie."]
+                    ]
+                },
+                {
+                    name: "UV Light", icon: "🟣", cat: "dowody", price: "$35", max: 2, start: true,
+                    tagline: "ODCISKI I ŚLADY",
+                    what: "Odsłania ultrafioletowe odciski palców i ślady stóp (także w soli). To dowód Ultraviolet.",
+                    use: [
+                        "Świeć na klamki, okna i włączniki, z którymi duch miał kontakt.",
+                        "Ślady ładują się chwilę (od 5 s na Tier I do 1,5 s na Tier III) – nie odrywaj światła od razu."
+                    ],
+                    tiers: [
+                        ["od startu", "Elektroniczna latarka z wąskim snopem; ślady ładują się 5 s."],
+                        ["poz. 18 · $3 000", "Świetlówka (glowstick): światło obszarowe przez 60 s, ślady ładują się 10 s; nieelektroniczna, po potrząśnięciu odzyskuje blask."],
+                        ["poz. 46 · $2 000", "Elektroniczna latarka UV z szerokim snopem; ślady ładują się 1,5 s."]
+                    ]
+                },
+                {
+                    name: "Video Camera", icon: "📹", cat: "dowody", price: "$50", max: 4, start: true,
+                    tagline: "OBRAZ W FURGONETCE",
+                    what: "Przesyła obraz z pomieszczenia do furgonetki. Tam wypatrujesz Ghost Orbs i nagrywasz materiał.",
+                    use: [
+                        "Ustaw na Tripodzie w pokoju ducha i sprawdzaj obraz w furgonetce.",
+                        "Orby widać w trybie nocnym kamery, gdy w pokoju nie ma światła."
+                    ],
+                    tiers: [
+                        ["od startu", "Niska jakość obrazu i odporność na zakłócenia, noktowizja; wyblakły tekst na ekranie oznacza powtórzony dowód."],
+                        ["poz. 27 · $3 000", "Średnia jakość obrazu i odporność na zakłócenia, noktowizja."],
+                        ["poz. 49 · $3 000", "Wysoka jakość obrazu i odporność na zakłócenia, noktowizja."]
+                    ]
+                },
+
+                /* ---------------- MONITORING ---------------- */
+                {
+                    name: "Motion Sensor", icon: "📡", cat: "monitoring", price: "$100", max: 4, lvl: 3,
+                    tagline: "RUCH W FURGONETCE",
+                    what: "Stawiany czujnik, który zgłasza ruch ducha lub graczy, gdy ktoś przetnie jego wiązkę.",
+                    use: [
+                        "Stawiaj w korytarzach i przy drzwiach, by zobaczyć, którędy duch chodzi.",
+                        "Pomaga zawęzić pokój ducha, gdy termometr nie rozstrzyga."
+                    ],
+                    tiers: [
+                        ["poz. 3", "Wykrywa linię; sygnał świetlny."],
+                        ["poz. 42 · $2 500", "Linia lub wąski obszar; dodaje sygnał dźwiękowy."],
+                        ["poz. 70 · $8 000", "Skanuje pełny obszar 1,5 m; sygnał świetlny i dźwiękowy."]
+                    ]
+                },
+                {
+                    name: "Parabolic Microphone", icon: "🎤", cat: "monitoring", price: "$50", max: 2, lvl: 5,
+                    tagline: "NASŁUCH NA DALEKI ZASIĘG",
+                    what: "Kierunkowy mikrofon do wyłapywania odległych dźwięków. Pomaga lokalizować aktywność i wykonywać cele.",
+                    use: [
+                        "Stań w jednym miejscu i obracaj się – dźwięk jest głośniejszy, gdy celujesz w stronę źródła.",
+                        "Ustal, w której części domu jest aktywność, zanim zaczniesz szukać dowodów."
+                    ],
+                    tiers: [
+                        ["poz. 5", "Wykrywa dźwięki w szerokim zasięgu 20 m."],
+                        ["poz. 32 · $3 000", "Zasięg 30 m, dodaje ekran."],
+                        ["poz. 70 · $5 000", "Zasięg 30 m, ekran ze wskaźnikami odległości i kierunku."]
+                    ]
+                },
+                {
+                    name: "Photo Camera", icon: "📷", cat: "monitoring", price: "$40", max: 3, lvl: 2,
+                    tagline: "ZDJĘCIA = PIENIĄDZE",
+                    what: "Robi zdjęcia aktywności ducha i innych celów kontraktu. Zdjęcia dają nagrody i spełniają cele.",
+                    use: [
+                        "Fotografuj ducha, jego interakcje i inne zdarzenia – za zdjęcia dostajesz pieniądze.",
+                        "Światełko zmienia się z czerwonego na zielone przy zdjęciu z dowodem; żółte oznacza duplikat."
+                    ],
+                    tiers: [
+                        ["poz. 2", "Zdjęcie co 3 s; światło jak wyżej."],
+                        ["poz. 23 · $3 000", "Zdjęcie co 2 s, ekran, średnia odporność na zakłócenia; podświetla zdjęcia z dowodem, a duplikaty blakną."],
+                        ["poz. 55 · $5 000", "Zdjęcie co 1 s, ekran, wysoka odporność na zakłócenia; podświetla zdjęcia z dowodem, a duplikaty blakną."]
+                    ]
+                },
+                {
+                    name: "Sound Recorder", icon: "🎙️", cat: "monitoring", price: "$30", max: 2, lvl: 4,
+                    tagline: "NAGRANIA DO DZIENNIKA",
+                    what: "Nagrywa dźwięki ducha jako materiał, który możesz przejrzeć w dzienniku.",
+                    use: [
+                        "Włącz, gdy duch jest aktywny w pobliżu, np. podczas pracy ze Spirit Box.",
+                        "Przyciemniony wskaźnik głośności oznacza powtórzone nagranie."
+                    ],
+                    tiers: [
+                        ["poz. 4", "Zasięg 3 m; przyciemnione wskaźniki głośności oznaczają duplikaty."],
+                        ["poz. 39 · $3 000", "Zasięg 5 m, ekran ze wskaźnikiem dźwięku; wyblakłe fale oznaczają duplikaty."],
+                        ["poz. 60 · $5 000", "Zasięg 5 m, dodaje wskaźniki odległości i kierunku."]
+                    ]
+                },
+                {
+                    name: "Sound Sensor", icon: "🔊", cat: "monitoring", price: "$80", max: 4, lvl: 10,
+                    tagline: "DŹWIĘK W FURGONETCE",
+                    what: "Stawiany mikrofon, który wysyła dźwięki z okolicy do monitora dźwięku w furgonetce.",
+                    use: [
+                        "Rozstaw w kilku pokojach i obserwuj monitor dźwięku w furgonetce – pomaga wskazać pokój ducha.",
+                        "Dobierz zasięg (5, 10 lub 15 m) do wielkości pomieszczenia."
+                    ],
+                    tiers: [
+                        ["poz. 10", "Monitoruje pełny obszar w ustawieniach 5 m lub 10 m."],
+                        ["poz. 32 · $3 000", "Pełny obszar w ustawieniach 5, 10 lub 15 m."],
+                        ["poz. 52 · $1 500", "Obszar pełny, szeroki lub boczny, w ustawieniach 5, 10 lub 15 m."]
+                    ]
+                },
+                {
+                    name: "Tripod", icon: "🎥", cat: "monitoring", price: "$25", max: 4, lvl: 9,
+                    tagline: "STATYW NA KAMERĘ",
+                    what: "Trzyma Video Camera w wybranym miejscu i daje stabilny podgląd pokoju z furgonetki.",
+                    use: [
+                        "Ustaw tak, by kamera obejmowała cały pokój i drzwi.",
+                        "Tier II i III pozwalają obracać kamerę."
+                    ],
+                    tiers: [
+                        ["poz. 9", "Można go postawić, ale ma niską stabilność."],
+                        ["poz. 34 · $5 000", "Średnia stabilność i obrót kamery."],
+                        ["poz. 60 · $3 000", "Wysoka stabilność i obrót kamery."]
+                    ]
+                },
+
+                /* ---------------- OCHRONA ---------------- */
+                {
+                    name: "Crucifix", icon: "✝️", cat: "ochrona", price: "$30", max: 2, lvl: 7,
+                    tagline: "BLOKUJE POLOWANIE",
+                    what: "Stawiany krzyż, który zapobiega rozpoczęciu polowania, gdy duch jest w jego zasięgu. Zużywa się przy użyciu.",
+                    use: [
+                        "Postaw w pokoju ducha tam, gdzie duch spędza najwięcej czasu.",
+                        "Weź dwa i rozstaw je tak, by ich zasięgi obejmowały różne części pokoju."
+                    ],
+                    tiers: [
+                        ["poz. 7", "Zasięg 3 m, jedno użycie."],
+                        ["poz. 34 · $4 000", "Zasięg 4 m, dwa użycia."],
+                        ["poz. 80 · $20 000", "Zasięg 5 m, dwa użycia; może powstrzymać jeden cursed hunt."]
+                    ],
+                    tip: "Ulepszenie Tier III kosztuje 20 000 $, ale tylko ono potrafi powstrzymać cursed hunt (zobacz Przeklęte przedmioty)."
+                },
+                {
+                    name: "Incense", icon: "🌿", cat: "ochrona", price: "$15", max: 4, lvl: 14,
+                    tagline: "SMUDGE",
+                    what: "Dym z kadzidła chwilowo blokuje zwykłe polowania, gdy duch jest w pobliżu, a w trakcie polowania dezorientuje ducha.",
+                    use: [
+                        "Zapal Igniterem blisko ducha. Czasy blokady polowania znajdziesz w timerach Smudge w Lab Tools.",
+                        "W trakcie polowania zapal, gdy duch jest blisko – oślepisz go na kilka sekund."
+                    ],
+                    tiers: [
+                        ["poz. 14", "Pali się 5 s, działa na ducha w promieniu 3 m, podczas polowania oślepia go na 5 s; zużywa się."],
+                        ["poz. 37 · $3 500", "Pali się 6 s, promień 4 m, oślepia na 5 s i spowalnia na 5 s; zużywa się."],
+                        ["poz. 80 · $15 000", "Pali się 7 s, promień 5 m, oślepia na 5 s i zatrzymuje na 5 s; wielokrotnego użytku."]
+                    ]
+                },
+                {
+                    name: "Salt", icon: "🧂", cat: "ochrona", price: "$15", max: 3, lvl: 8,
+                    tagline: "ŚLADY DUCHA",
+                    what: "Sól tworzy kopczyki, w których duch zostawia ślady stóp (widoczne w świetle UV). Na najwyższym tierze spowalnia też ducha.",
+                    use: [
+                        "Wysyp w przejściach pokoju ducha i sprawdź ślady światłem UV.",
+                        "Wraith nie stawia stóp w soli – to jeden ze sposobów, by go rozpoznać."
+                    ],
+                    tiers: [
+                        ["poz. 8", "Każdy kopczyk ma 2 użycia."],
+                        ["poz. 39 · $2 500", "Każdy kopczyk ma 3 użycia."],
+                        ["poz. 65 · $5 000", "3 użycia i spowolnienie ducha o 2 s podczas polowania."]
+                    ]
+                },
+                {
+                    name: "Sanity Medication", icon: "💊", cat: "ochrona", price: "$20", max: 4, lvl: 14,
+                    tagline: "REGENERACJA SANITY",
+                    what: "Przywraca sanity w czasie. Ilość zależy od ustawień trudności kontraktu.",
+                    use: [
+                        "Użyj, zanim sanity spadnie nisko – im niższe sanity, tym łatwiej o polowanie.",
+                        "Weź kilka sztuk na wyższych poziomach trudności."
+                    ],
+                    tiers: [
+                        ["poz. 14", "Przywraca sanity przez 20 s; zużywa się."],
+                        ["poz. 39 · $2 000", "Przywraca sanity przez 10 s; zużywa się."],
+                        ["poz. 75 · $5 000", "Przywraca sanity przez 10 s i daje 10 s przyspieszenia biegu; zużywa się."]
+                    ]
+                },
+                {
+                    name: "Firelight", icon: "🕯️", cat: "ochrona", price: "$15", max: 4, lvl: 12,
+                    tagline: "ŚWIECA SPOWALNIA UTRATĘ SANITY",
+                    what: "Źródło światła, które zmniejsza pasywną utratę sanity w pobliżu, dopóki płomień się pali. Duch może go zdmuchnąć.",
+                    use: [
+                        "Zapal Igniterem i postaw tam, gdzie drużyna spędza najwięcej czasu.",
+                        "Duch może zdmuchnąć płomień, więc sprawdzaj, czy nadal się pali."
+                    ],
+                    tiers: [
+                        ["poz. 12", "Zasięg 2 m, pali się 5 min, zmniejsza pasywną utratę sanity o 33%; można postawić, zużywa się."],
+                        ["$3 000", "Zasięg 2 m, pali się 10 min, zmniejsza utratę sanity o 50%; można postawić, zużywa się."],
+                        ["poz. 75 · $10 000", "Zasięg 2 m, działa przez cały kontrakt, zmniejsza utratę sanity o 66%, jest wodoodporna i wielokrotnego użytku."]
+                    ]
+                },
+
+                /* ---------------- ŚWIATŁO I OGIEŃ ---------------- */
+                {
+                    name: "Flashlight", icon: "🔦", cat: "swiatlo", price: "$30", max: 4, start: true,
+                    tagline: "PODSTAWOWE ŚWIATŁO",
+                    what: "Ręczna latarka do oświetlania ciemnych pomieszczeń. Z każdym tierem jest jaśniejsza.",
+                    use: [
+                        "Weź po jednej na gracza – w ciemności sanity spada szybciej.",
+                        "Head Gear Tier II daje światło bez zajmowania ręki."
+                    ],
+                    tiers: [
+                        ["od startu", "Niska jasność, wąski snop."],
+                        ["poz. 18 · $3 000", "Średnia jasność, wąski snop."],
+                        ["poz. 34 · $3 000", "Wysoka jasność, szerszy snop."]
+                    ]
+                },
+                {
+                    name: "Head Gear", icon: "🥽", cat: "swiatlo", price: "$60", max: 4, lvl: 13,
+                    tagline: "GŁOWA, NIE RĘCE",
+                    what: "Zajmuje slot głowy. Zależnie od tieru daje obraz z kamery, latarkę lub noktowizję.",
+                    use: [
+                        "Dzięki niemu możesz nosić o jeden przedmiot więcej niż zwykle.",
+                        "Tier III daje noktowizję, ale z wysokimi zakłóceniami paranormalnymi."
+                    ],
+                    tiers: [
+                        ["poz. 13", "Kamera na głowie: obraz średniej jakości, niskie zakłócenia paranormalne."],
+                        ["poz. 42 · $10 000", "Czołówka o średniej jasności, nie zajmuje ręki."],
+                        ["poz. 80 · $10 000", "Noktowizja, ale wysokie zakłócenia paranormalne."]
+                    ]
+                },
+                {
+                    name: "Igniter", icon: "🔥", cat: "swiatlo", price: "$10", max: 4, lvl: 12,
+                    tagline: "ZAPALA OGIEŃ",
+                    what: "Zapałki lub zapalniczka do odpalania Incense, Firelight, świec i ognisk.",
+                    use: [
+                        "Bez niego nie zapalisz kadzidła ani Firelight.",
+                        "Zapałki palą się tylko 10 s, więc przygotuj wszystko, zanim je odpalisz."
+                    ],
+                    tiers: [
+                        ["poz. 12", "Pudełko z 10 zapałkami, każda pali się 10 s; zużywa się."],
+                        ["poz. 37 · $500", "Zapalniczka gazowa, pali się do 5 min; zużywa się."],
+                        ["poz. 52 · $750", "Wodoodporna zapalniczka, pali się do 10 min; wielokrotnego użytku."]
+                    ]
+                }
+            ];
+
+            /* ---------- rendering ---------- */
+            const slug = item => item.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+            const list = items => "<ul>" + items.map(item => `<li>${item}</li>`).join("") + "</ul>";
+            const olist = items => "<ol>" + items.map(item => `<li>${item}</li>`).join("") + "</ol>";
+
+            /* turn item names inside plain text into links to their cards */
+            const nameRe = new RegExp(
+                ITEMS.map(i => i.name).sort((a, b) => b.length - a.length)
+                    .map(n => n.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|"), "g");
+            const bySlug = {};
+            ITEMS.forEach(i => { bySlug[i.name] = slug(i); });
+            const linkify = text => text.replace(nameRe, m => `<a href="#${bySlug[m]}">${m}</a>`);
+
+            const goalTable = rows => `<table class="c-table">` +
+                rows.map(([a, b]) => `<tr><td>${a}</td><td>${linkify(b)}</td></tr>`).join("") + `</table>`;
+            const tierTable = tiers => `<table class="c-table">` +
+                tiers.map(([meta, text], i) => `<tr><td>TIER ${["I", "II", "III"][i]}<span class="t-meta">${meta}</span></td><td>${text}</td></tr>`).join("") + `</table>`;
+
+            function card(item) {
+                const color = CATS[item.cat].color;
+                const unlock = item.start ? "dostępny od startu" : `odblokowanie: poz. <b>${item.lvl}</b>`;
+                return `
+                    <article class="cursed-card" id="${slug(item)}" data-cat="${item.cat}" style="--accent:${color}">
+                        <header>
+                            <span class="c-icon">${item.icon}</span>
+                            <div><h3>${item.name}</h3><div class="c-tagline">${item.tagline}</div></div>
+                        </header>
+                        <div class="c-body">
+                        <p class="c-what">${item.what}</p>
+                        <div class="c-cost"><label>CENA I LIMIT</label><b>${item.price}</b> za sztukę · limit <b>${item.max}</b> na kontrakt · ${unlock}</div>
+                        <h4>JAK UŻYWAĆ</h4>${list(item.use)}
+                        <h4>TIERY</h4>${tierTable(item.tiers)}
+                        ${item.tip ? `<div class="c-tip">💡 ${item.tip}</div>` : ""}
+                        </div>
+                    </article>`;
+            }
+
+            function renderEquipment() {
+                const counts = {};
+                ITEMS.forEach(i => { counts[i.cat] = (counts[i.cat] || 0) + 1; });
+                const chips = [`<button class="active" data-cat="all">WSZYSTKIE (${ITEMS.length})</button>`]
+                    .concat(Object.keys(CATS).map(k => `<button data-cat="${k}">${CATS[k].label} (${counts[k]})</button>`)).join("");
+
+                document.getElementById("equip-root").innerHTML = `
+                    <div class="cursed-panel"><h2>JAK DZIAŁA SPRZĘT</h2>${list(BASICS)}</div>
+                    <div class="cursed-panel"><h2>CZEGO POTRZEBUJESZ? WYBIERZ NARZĘDZIE</h2>${goalTable(GOALS)}</div>
+                    <div class="cursed-panel"><h2>SUGEROWANA KOLEJNOŚĆ ZAKUPÓW</h2>${olist(ORDER)}</div>
+                    <nav class="filters" id="filters">${chips}</nav>
+                    <div class="cursed-grid">${ITEMS.map(card).join("")}</div>
+                    <p class="cursed-note">Źródła: wiki Phasmophobia (Fandom) oraz poradniki społeczności. Ceny, poziomy i statystyki tierów mogą zmieniać się z aktualizacjami gry, więc sprawdzaj je w praktyce.</p>`;
+
+                const buttons = document.querySelectorAll("#filters button");
+                const cards = document.querySelectorAll(".cursed-card");
+                function applyFilter(cat) {
+                    buttons.forEach(b => b.classList.toggle("active", b.dataset.cat === cat));
+                    cards.forEach(c => c.classList.toggle("is-hidden", cat !== "all" && c.dataset.cat !== cat));
+                }
+                buttons.forEach(b => b.addEventListener("click", () => applyFilter(b.dataset.cat)));
+
+                /* links from the tables above: make sure the target card is visible, then jump to it */
+                document.querySelectorAll(".c-table a, .cursed-panel a").forEach(a => {
+                    a.addEventListener("click", () => applyFilter("all"));
+                });
+            }
+            renderEquipment();
+        })();
+    </script>
+</body>
+</html>

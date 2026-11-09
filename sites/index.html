@@ -1,0 +1,3534 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <script>
+        /* First visit in this tab: play intro.html, which always continues to index.html when it is done.
+           intro.html sets "gl-intro-seen" right before it leaves, so this never loops. */
+        (function () {
+            try {
+                if (sessionStorage.getItem("gl-intro-seen")) return;           // intro already played in this tab
+                sessionStorage.setItem("gl-storage-test", "1");                // if storage is blocked this throws -> no redirect (no loop)
+                sessionStorage.removeItem("gl-storage-test");
+                document.documentElement.style.visibility = "hidden";          // no flash of the page before the redirect
+                location.replace("intro.html");
+            } catch (error) { /* storage blocked: just show the page */ }
+        })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GHOSTLAB</title>
+    <link rel="icon" type="image/x-icon" href="../icons/ghostlab.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+    <style>
+        /* ======== DESIGN TOKENS ======== */
+
+        :root {
+            --neon-blue: #00e5ff;
+            --deep-void: #02070c;
+            --ice-white: #d7f8ff;
+            --mag: #ff2bd6;
+            --yel: #f9f002;
+            --card-glass: rgba(4, 16, 24, 0.8);
+            --border-glow: rgba(0, 229, 255, 0.35);
+            --color-emf: #ff3b5c;
+            --color-box: #4db8ff;
+            --color-dots: #00e5ff;
+            --color-uv: #c27bff;
+            --color-writing: #2dffc4;
+            --color-orbs: #ffe14d;
+            --color-freezing: #ffffff;
+            --hunt-safe: #39ff88;
+            --hunt-warn: #f9f002;
+            --hunt-danger: #ff3b5c;
+            --cut: polygon(0 0, calc(100% - 26px) 0, 100% 26px, 100% 100%, 26px 100%, 0 calc(100% - 26px));
+            --cut-s: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+        }
+
+        /* ======== BASE ======== */
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: #02070c;
+            color: var(--ice-white);
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 500;
+            font-size: 1.05rem;
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-image:
+                radial-gradient(ellipse at 50% -15%, rgba(0, 229, 255, 0.22), transparent 55%),
+                radial-gradient(circle at 100% 100%, rgba(255, 43, 214, 0.16), transparent 45%),
+                linear-gradient(rgba(0, 229, 255, 0.06) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 229, 255, 0.06) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 48px 48px, 48px 48px;
+            background-attachment: fixed;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 1;
+            background: radial-gradient(440px circle at var(--mx, 50%) var(--my, 30%), rgba(0, 229, 255, 0.1), transparent 70%);
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 2;
+            background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.22) 0 1px, transparent 1px 3px);
+            mix-blend-mode: multiply;
+        }
+
+        #fx {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* ======== SIDEBAR ======== */
+
+        .sidebar {
+            width: 340px;
+            height: 100vh;
+            background: linear-gradient(180deg, #020a10, #041a24);
+            border-right: 1px solid var(--neon-blue);
+            padding: 90px 22px 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+            position: fixed;
+            top: 0;
+            left: -340px;
+            z-index: 1000;
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto;
+        }
+
+        .sidebar.active {
+            transform: translateX(340px);
+            box-shadow: 0 0 50px rgba(0, 229, 255, 0.3), 20px 0 60px rgba(0, 0, 0, 0.8);
+        }
+
+        .brand {
+            font: 900 1.7rem 'Orbitron', sans-serif;
+            color: var(--neon-blue);
+            letter-spacing: 0.14em;
+            text-shadow: 2px 0 var(--mag), -2px 0 rgba(0, 229, 255, 0.4);
+            border-bottom: 1px solid var(--border-glow);
+            padding-bottom: 14px;
+        }
+
+        .brand span {
+            color: var(--ice-white);
+            text-shadow: none;
+        }
+
+        .sidebar-widget {
+            background: rgba(0, 229, 255, 0.04);
+            border: 1px solid var(--border-glow);
+            border-left: 4px solid var(--neon-blue);
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .widget-title {
+            font: 0.75rem 'Share Tech Mono', monospace;
+            color: var(--mag);
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+        }
+
+        .widget-title::before {
+            content: '// ';
+        }
+
+        .timer-btn {
+            width: 100%;
+            background: transparent;
+            border: 1px solid var(--neon-blue);
+            color: var(--neon-blue);
+            padding: 11px 14px;
+            cursor: pointer;
+            font: 700 0.85rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.1em;
+            display: flex;
+            justify-content: space-between;
+            clip-path: var(--cut-s);
+            transition: 0.2s;
+        }
+
+        .timer-btn:hover {
+            background: var(--neon-blue);
+            color: #02070c;
+        }
+
+        .bpm-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        #bpm-input {
+            flex: 1;
+            width: 100%;
+            background: #031017;
+            border: 1px solid var(--border-glow);
+            color: var(--ice-white);
+            padding: 11px;
+            text-align: center;
+            font: 700 1.3rem 'Orbitron', sans-serif;
+            outline: none;
+        }
+
+        #bpm-input:focus {
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 18px rgba(0, 229, 255, 0.3);
+        }
+
+        #speed-res {
+            flex: 0.8;
+            background: rgba(0, 229, 255, 0.07);
+            border: 1px solid var(--border-glow);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-width: 80px;
+        }
+
+        #speed-val-out {
+            font: 700 1.2rem 'Orbitron', sans-serif;
+            color: var(--neon-blue);
+        }
+
+        .unit-label {
+            font: 0.65rem 'Share Tech Mono', monospace;
+            color: #6fa3b0;
+            text-transform: uppercase;
+        }
+
+        .tap-btn {
+            width: 100%;
+            background: var(--mag);
+            border: 0;
+            color: #02070c;
+            padding: 13px;
+            cursor: pointer;
+            font: 900 0.85rem 'Orbitron', sans-serif;
+            letter-spacing: 0.2em;
+            clip-path: var(--cut-s);
+            transition: 0.2s;
+        }
+
+        .tap-btn:hover {
+            filter: brightness(1.25);
+        }
+
+        .tap-btn:active {
+            transform: scale(0.97);
+        }
+
+        .ghost-suggestion-box {
+            background: #031017;
+            border: 1px dashed var(--border-glow);
+            padding: 10px;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            min-height: 60px;
+        }
+
+        .ghost-suggestion-box b {
+            color: var(--neon-blue);
+        }
+
+        .ghost-suggestion-box ul {
+            margin: 5px 0 0 16px;
+        }
+
+        .ghost-suggestion-box li {
+            margin-bottom: 3px;
+        }
+
+        .menu-toggle {
+            position: fixed;
+            top: 22px;
+            left: 22px;
+            z-index: 1100;
+            background: var(--neon-blue);
+            border: 0;
+            color: #02070c;
+            padding: 12px 18px;
+            cursor: pointer;
+            font: 700 0.8rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.1em;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            clip-path: var(--cut-s);
+            transition: 0.2s;
+        }
+
+        .menu-toggle:hover {
+            background: #fff;
+        }
+
+        .maps-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 18px;
+            background: var(--neon-blue);
+            color: #02070c;
+            text-decoration: none;
+            font: 700 0.8rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.1em;
+            clip-path: var(--cut-s);
+            transition: 0.2s;
+        }
+
+        .maps-link:hover {
+            background: #fff;
+        }
+
+        .hero-links {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 26px;
+        }
+
+        .guides-links {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .guides-links .maps-link {
+            font-size: 0.7rem;
+            padding: 10px 14px;
+        }
+
+        /* ======== HOTKEYS PANEL ======== */
+        .hk-btn {
+            position: fixed;
+            top: 22px;
+            right: 22px;
+            z-index: 1100;
+            width: 44px;
+            height: 44px;
+            display: grid;
+            place-items: center;
+            background: var(--neon-blue);
+            border: 0;
+            color: #02070c;
+            cursor: pointer;
+            font: 900 1.1rem 'Orbitron', sans-serif;
+            clip-path: var(--cut-s);
+            transition: 0.2s;
+        }
+
+        .hk-btn:hover {
+            background: #fff;
+        }
+
+        .hk-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 1200;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: rgba(1, 6, 10, 0.78);
+            backdrop-filter: blur(4px);
+        }
+
+        .hk-overlay.open {
+            display: flex;
+        }
+
+        .hk-panel {
+            width: min(560px, 100%);
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 24px 26px;
+            background: rgba(2, 12, 18, 0.96);
+            border: 1px solid var(--border-glow);
+            border-left: 4px solid var(--neon-blue);
+        }
+
+        .hk-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .hk-head h2 {
+            font: 900 1.1rem 'Orbitron', sans-serif;
+            letter-spacing: 0.08em;
+            color: #fff;
+            text-shadow: 2px 0 var(--mag);
+        }
+
+        .hk-close {
+            padding: 6px 12px;
+            background: transparent;
+            border: 1px solid var(--border-glow);
+            color: var(--ice-white);
+            cursor: pointer;
+            font: 700 0.75rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.08em;
+            transition: 0.2s;
+        }
+
+        .hk-close:hover {
+            background: var(--neon-blue);
+            color: #02070c;
+        }
+
+        .hk-list {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 12px 18px;
+            align-items: start;
+        }
+
+        .hk-keys {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            justify-content: flex-end;
+        }
+
+        .hk-list kbd {
+            min-width: 30px;
+            padding: 3px 9px;
+            text-align: center;
+            background: rgba(0, 229, 255, 0.1);
+            border: 1px solid var(--neon-blue);
+            border-bottom-width: 3px;
+            color: var(--neon-blue);
+            font: 700 0.82rem 'Share Tech Mono', monospace;
+        }
+
+        .hk-list .hk-text {
+            line-height: 1.4;
+            color: #c4e6ee;
+        }
+
+        .hk-list .hk-text small {
+            display: block;
+            margin-top: 2px;
+            font: 0.74rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.03em;
+            color: #6fa3b0;
+        }
+
+        .hk-note {
+            margin-top: 18px;
+            font: 0.74rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.04em;
+            color: #5f97a4;
+        }
+
+        /* ======== PAGE LAYOUT & HERO ======== */
+
+        .content {
+            position: relative;
+            z-index: 3;
+            max-width: 1560px;
+            margin: 0 auto;
+            padding: 100px 32px 90px;
+        }
+
+        .hero {
+            text-align: center;
+            margin-bottom: 44px;
+        }
+
+        .hero::after {
+            content: '';
+            display: block;
+            height: 2px;
+            width: min(420px, 70%);
+            margin: 26px auto 0;
+            background: linear-gradient(90deg, transparent, var(--neon-blue), var(--mag), transparent);
+        }
+
+        .eyebrow {
+            font: 0.8rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.3em;
+            color: var(--neon-blue);
+        }
+
+        .hero h1 {
+            font: 900 clamp(2.6rem, 9vw, 6.5rem) 'Orbitron', sans-serif;
+            letter-spacing: 0.1em;
+            line-height: 1.1;
+            margin: 16px 0;
+            color: #fff;
+            text-shadow: 4px 0 var(--mag), -4px 0 var(--neon-blue), 0 0 40px rgba(0, 229, 255, 0.5);
+            animation: glitch 5s infinite;
+        }
+
+        @keyframes glitch {
+
+            0%,91%,100% {
+                transform: none;
+            }
+
+            92% {
+                transform: translateX(-6px) skewX(10deg);
+                text-shadow: -7px 0 var(--mag), 7px 0 var(--neon-blue);
+            }
+
+            94% {
+                transform: translateX(6px) skewX(-8deg);
+            }
+
+            96% {
+                transform: translateX(-2px);
+            }
+        }
+
+        .hero p {
+            max-width: 580px;
+            margin: 0 auto;
+            line-height: 1.5;
+            color: #9fd3de;
+            font-size: 1.15rem;
+        }
+
+        /* ======== TOOLBAR & EVIDENCE FILTERS ======== */
+
+        .top-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            background: rgba(2, 12, 18, 0.75);
+            border: 1px solid var(--border-glow);
+            border-left: 4px solid var(--neon-blue);
+            padding: 22px;
+            margin-bottom: 38px;
+            backdrop-filter: blur(8px);
+        }
+
+        .search-row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        #search {
+            flex: 1;
+            min-width: 220px;
+            background: #031017;
+            border: 1px solid var(--border-glow);
+            padding: 13px 18px;
+            color: #fff;
+            font: 1rem 'Share Tech Mono', monospace;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        #search:focus {
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 22px rgba(0, 229, 255, 0.25);
+        }
+
+        #sort {
+            background: #031017;
+            border: 1px solid var(--border-glow);
+            color: #fff;
+            padding: 13px 14px;
+            font: 0.9rem 'Share Tech Mono', monospace;
+            outline: none;
+            cursor: pointer;
+        }
+
+        #sort option {
+            background: #031017;
+        }
+
+        .count {
+            font: 0.8rem 'Share Tech Mono', monospace;
+            color: var(--yel);
+            letter-spacing: 0.12em;
+            white-space: nowrap;
+        }
+
+        .reset-btn,
+        .flip-btn {
+            background: transparent;
+            border: 1px solid var(--mag);
+            color: var(--mag);
+            padding: 11px 16px;
+            cursor: pointer;
+            font: 700 0.78rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.1em;
+            clip-path: var(--cut-s);
+            transition: 0.2s;
+        }
+
+        .reset-btn:hover {
+            background: var(--mag);
+            color: #02070c;
+        }
+        .flip-btn {
+            border-color: var(--neon-blue);
+            color: var(--neon-blue);
+        }
+        .flip-btn:hover {
+            background: var(--neon-blue);
+            color: #02070c;
+        }
+
+        .filter-hint {
+            font: 0.75rem 'Share Tech Mono', monospace;
+            color: #5f97a4;
+            line-height: 1.6;
+        }
+
+        .evidence-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .ev-btn {
+            background: transparent;
+            border: 1px solid var(--ev, var(--border-glow));
+            color: var(--ev, var(--ice-white));
+            padding: 9px 14px;
+            cursor: pointer;
+            font: 700 0.8rem 'Share Tech Mono', monospace;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            clip-path: var(--cut-s);
+            transition: 0.2s;
+        }
+
+        .ev-btn:hover {
+            background: color-mix(in srgb, var(--ev, var(--neon-blue)) 20%, transparent);
+        }
+
+        .ev-btn.active {
+            background: var(--ev, var(--neon-blue));
+            border-color: var(--ev, var(--neon-blue));
+            color: #02070c;
+        }
+
+        .ev-btn.excluded {
+            background: rgba(255, 43, 214, 0.15);
+            border-color: var(--mag);
+            color: var(--mag);
+            text-decoration: line-through;
+        }
+
+        /* Every evidence button wears its own evidence colour */
+        .ev-btn[data-evidence="EMF"] {
+            --ev: var(--color-emf);
+        }
+
+        .ev-btn[data-evidence="Box"] {
+            --ev: var(--color-box);
+        }
+
+        .ev-btn[data-evidence="Ultraviolet"] {
+            --ev: var(--color-uv);
+        }
+
+        .ev-btn[data-evidence="DOTS"] {
+            --ev: var(--color-dots);
+        }
+
+        .ev-btn[data-evidence="Writing"] {
+            --ev: var(--color-writing);
+        }
+
+        .ev-btn[data-evidence="Orbs"] {
+            --ev: var(--color-orbs);
+        }
+
+        .ev-btn[data-evidence="Freezing"] {
+            --ev: var(--color-freezing);
+        }
+
+        /* ======== GHOST CARDS (FRONT) ======== */
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(min(100%, 370px), 1fr));
+            gap: 34px;
+        }
+
+        .card-container {
+            perspective: 1400px;
+            height: 575px;
+            cursor: pointer;
+            outline: none;
+            transform: perspective(1400px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+            transition: transform 0.25s ease-out;
+            animation: rise 0.6s both;
+            animation-delay: calc(var(--i)*30ms);
+        }
+
+        @keyframes rise {
+
+            from {
+                opacity: 0;
+                transform: translateY(26px);
+            }
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.8s cubic-bezier(0.3, 1.2, 0.4, 1);
+            transform-style: preserve-3d;
+        }
+
+        .card-container.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card-front,
+        .card-back {
+            position: absolute;
+            inset: 0;
+            isolation: isolate;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            clip-path: var(--cut);
+            padding: 26px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: background 0.3s;
+        }
+
+        .card-front::before,
+        .card-back::before {
+            content: '';
+            position: absolute;
+            inset: 2px;
+            z-index: -1;
+            clip-path: var(--cut);
+        }
+
+        .card-front {
+            background: linear-gradient(135deg, var(--neon-blue), #0a6f80);
+        }
+
+        .card-front::before {
+            background:
+                radial-gradient(340px circle at var(--gx, 50%) var(--gy, 0%), rgba(0, 229, 255, 0.18), transparent 60%),
+                linear-gradient(160deg, #06222d, #020a10);
+        }
+
+        .card-container:hover .card-front,
+        .card-container:focus-visible .card-front {
+            background: linear-gradient(135deg, #fff, var(--neon-blue));
+        }
+
+        .card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font: 0.78rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.2em;
+            color: var(--neon-blue);
+        }
+
+        .accent {
+            height: 3px;
+            margin: 12px 0 0;
+            clip-path: polygon(0 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
+        }
+
+        .card-front h3 {
+            font: 900 1.8rem 'Orbitron', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin: 12px 0 12px;
+            color: #fff;
+            text-shadow: 2px 0 var(--mag), -2px 0 rgba(0, 229, 255, 0.6);
+        }
+
+        .badges {
+            margin-bottom: 12px;
+        }
+
+        .badge {
+            font: 0.7rem 'Share Tech Mono', monospace;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            padding: 4px 9px;
+            margin: 0 6px 6px 0;
+            display: inline-block;
+            border: 1px solid;
+            background: rgba(0, 0, 0, 0.4);
+            clip-path: var(--cut-s);
+        }
+
+        .badge-emf {
+            color: var(--color-emf);
+        }
+
+        .badge-box {
+            color: var(--color-box);
+        }
+
+        .badge-dots {
+            color: var(--color-dots);
+        }
+
+        .badge-uv {
+            color: var(--color-uv);
+        }
+
+        .badge-writing {
+            color: var(--color-writing);
+        }
+
+        .badge-orbs {
+            color: var(--color-orbs);
+        }
+
+        .badge-freezing {
+            color: var(--color-freezing);
+        }
+
+        .badge {
+            border-color: currentColor;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .stat {
+            border: 1px solid var(--border-glow);
+            border-left: 3px solid var(--neon-blue);
+            padding: 8px 10px;
+            background: rgba(0, 229, 255, 0.05);
+        }
+
+        .stat label {
+            display: block;
+            font: 0.6rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.16em;
+            color: #6fa3b0;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .stat b {
+            display: block;
+            font: 700 1rem 'Orbitron', sans-serif;
+            color: var(--neon-blue);
+            line-height: 1.3;
+        }
+
+        .pro-tips {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            font-size: 1rem;
+            line-height: 1.4;
+            color: #c4e6ee;
+            border-top: 1px dashed var(--border-glow);
+            padding: 12px 6px 0 0;
+            scrollbar-width: none;            /* no visible scrollbar - scroll with the wheel or touch */
+            -ms-overflow-style: none;
+        }
+
+        .pro-tips b {
+            color: var(--neon-blue);
+            font-weight: 700;
+        }
+
+        .pro-tips::-webkit-scrollbar,
+        .zero-ev-content::-webkit-scrollbar {
+            display: none;                    /* Chrome / Edge / Safari */
+        }
+
+        .hint {
+            margin-top: 10px;
+            text-align: right;
+            font: 0.62rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.18em;
+            color: var(--mag);
+        }
+
+        /* ======== GHOST CARDS (BACK: 0-EVIDENCE TERMINAL) ======== */
+
+        .card-back {
+            transform: rotateY(180deg);
+            background: linear-gradient(135deg, var(--mag), var(--neon-blue));
+        }
+
+        .card-back::before {
+            background:
+                radial-gradient(circle at 50% 0, rgba(255, 43, 214, 0.2), transparent 60%),
+                linear-gradient(170deg, #12051a, #02070c);
+        }
+
+        .sigil {
+            display: none;
+        }
+
+        .zero-ev-title {
+            font: 0.78rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.22em;
+            color: var(--mag);
+        }
+
+        .zero-ev-title::before {
+            content: '> ';
+        }
+
+        .back-name {
+            font: 900 1.4rem 'Orbitron', sans-serif;
+            text-transform: uppercase;
+            margin: 6px 0 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed rgba(255, 43, 214, 0.5);
+            text-shadow: 2px 0 var(--mag), -2px 0 rgba(0, 229, 255, 0.6);
+        }
+
+        .zero-ev-content {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            font: 0.92rem/1.55 'Share Tech Mono', monospace;
+            color: #b8f4ff;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .zero-ev-content b {
+            color: var(--yel);
+            font-weight: 400;
+        }
+
+        .zero-ev-content::after {
+            content: '█';
+            color: var(--neon-blue);
+            animation: blink 1s steps(2) infinite;
+        }
+
+        @keyframes blink {
+
+            50% {
+                opacity: 0;
+            }
+        }
+
+        .no-desc {
+            display: grid;
+            gap: 4px;
+            padding: 30px 0;
+            color: #6fa3b0;
+        }
+
+        .no-desc em {
+            font-size: 2rem;
+            font-style: normal;
+        }
+
+        .card-back .hint {
+            color: var(--neon-blue);
+        }
+
+        /* ======== MICROPHONE SOUND BUTTONS (0-evidence text) ======== */
+        .mic-row {
+            display: inline-flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+
+        .mic-btn {
+            padding: 2px 8px;
+            background: rgba(255, 43, 214, 0.12);
+            border: 1px solid rgba(255, 43, 214, 0.6);
+            color: inherit;
+            cursor: pointer;
+            font-size: 1rem;
+            line-height: 1.3;
+            transition: 0.2s;
+        }
+
+        .mic-btn:hover {
+            transform: scale(1.18);
+            background: rgba(255, 43, 214, 0.28);
+            box-shadow: 0 0 12px rgba(255, 43, 214, 0.6);
+        }
+
+        .mic-btn.playing {
+            background: rgba(0, 229, 255, 0.25);
+            border-color: var(--neon-blue);
+            animation: micPulse 0.9s ease-in-out infinite;
+        }
+
+        .mic-btn.no-sound {
+            animation: micShake 0.4s;
+        }
+
+        @keyframes micPulse {
+            0%, 100% { box-shadow: 0 0 4px rgba(0, 229, 255, 0.4); }
+            50%      { box-shadow: 0 0 16px rgba(0, 229, 255, 0.9); }
+        }
+
+        @keyframes micShake {
+            0%, 100% { transform: translateX(0); }
+            25%      { transform: translateX(-3px); }
+            75%      { transform: translateX(3px); }
+        }
+
+        /* ======== CARD BUTTONS: FAVORITE / RULE OUT ======== */
+
+        .tools {
+            display: flex;
+            gap: 6px;
+        }
+
+        .tool {
+            width: 28px;
+            height: 28px;
+            background: transparent;
+            border: 1px solid var(--border-glow);
+            color: var(--neon-blue);
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: 0.2s;
+        }
+
+        .tool:hover {
+            background: var(--neon-blue);
+            color: #02070c;
+        }
+
+        .fav .tool.star {
+            background: var(--yel);
+            border-color: var(--yel);
+            color: #02070c;
+        }
+
+        .out .tool.rule {
+            background: var(--mag);
+            border-color: var(--mag);
+            color: #02070c;
+        }
+
+        .fav .card-front {
+            background: linear-gradient(135deg, var(--yel), #a89f00);
+        }
+
+        .out .card-front {
+            opacity: 0.38;
+            filter: grayscale(0.9);
+        }
+
+        .out .card-front h3 {
+            text-decoration: line-through;
+            text-decoration-color: var(--mag);
+        }
+
+        .empty {
+            display: none;
+            text-align: center;
+            padding: 80px 0;
+            font: 1rem 'Share Tech Mono', monospace;
+            color: #6fa3b0;
+        }
+
+        .empty em {
+            display: block;
+            font-size: 3rem;
+            font-style: normal;
+            margin-bottom: 10px;
+        }
+
+        @media(max-width:700px) {
+
+            .content {
+                padding: 90px 16px 60px;
+            }
+
+            .card-container {
+                height: 610px;
+            }
+        }
+
+        @media(prefers-reduced-motion:reduce) {
+
+            * {
+                animation: none !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* ======== SMUDGE TIMER ======== */
+
+        .ring {
+            --p: 360deg;
+            --rc: var(--neon-blue);
+            position: relative;
+            width: 178px;
+            height: 178px;
+            margin: 4px auto 8px;
+            border-radius: 50%;
+            background: conic-gradient(var(--rc) var(--p), rgba(0, 229, 255, 0.12) 0);
+            display: grid;
+            place-items: center;
+            box-shadow: 0 0 34px rgba(0, 229, 255, 0.25);
+            transition: box-shadow 0.3s;
+        }
+
+        .ring.run {
+            --rc: var(--hunt-danger);
+            box-shadow: 0 0 34px rgba(255, 59, 92, 0.35);
+        }
+
+        .ring::before {
+            content: '';
+            position: absolute;
+            inset: 12px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #06222d, #020a10);
+            border: 1px solid var(--border-glow);
+        }
+
+        .ring::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: repeating-conic-gradient(#020a10 0 1deg, transparent 1deg 6deg);
+            -webkit-mask: radial-gradient(circle, transparent 66%, #000 67%);
+            mask: radial-gradient(circle, transparent 66%, #000 67%);
+        }
+
+        .ring-in {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+        }
+
+        #t-val {
+            font: 900 2.2rem 'Orbitron', sans-serif !important;
+            text-align: center;
+            margin: 0 !important;
+            text-shadow: 0 0 16px currentColor !important;
+        }
+
+        #t-sub {
+            display: block;
+            margin-top: 4px;
+            font: 0.62rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.2em;
+            color: #6fa3b0;
+        }
+
+        .timer-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .timer-btn {
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            padding: 10px 4px;
+        }
+
+        .timer-btn span {
+            font-size: 0.62rem;
+            letter-spacing: 0.16em;
+        }
+
+        .timer-btn b {
+            font: 900 1.15rem 'Orbitron', sans-serif;
+        }
+
+        .timer-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* ======== SPEED DETECTOR ======== */
+
+        .bpm-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        #bpm-input {
+            font-size: 1.5rem;
+            padding: 14px 8px;
+            border-left: 3px solid var(--mag);
+        }
+
+        #speed-res {
+            border-left: 3px solid var(--neon-blue);
+            padding: 6px;
+            background: linear-gradient(160deg, rgba(0, 229, 255, 0.14), rgba(0, 229, 255, 0.03));
+        }
+
+        #speed-val-out {
+            font-size: 1.7rem;
+            text-shadow: 0 0 14px rgba(0, 229, 255, 0.6);
+        }
+
+        .meter {
+            display: flex;
+            align-items: flex-end;
+            gap: 2px;
+            height: 44px;
+            padding: 4px;
+            background: #031017;
+            border: 1px solid var(--border-glow);
+        }
+
+        .meter i {
+            flex: 1;
+            background: rgba(0, 229, 255, 0.1);
+            transition: background 0.15s, box-shadow 0.15s;
+        }
+
+        .meter i.on {
+            background: var(--neon-blue);
+            box-shadow: 0 0 8px var(--neon-blue);
+        }
+
+        .meter[data-z=mid] i.on {
+            background: var(--yel);
+            box-shadow: 0 0 8px var(--yel);
+        }
+
+        .meter[data-z=hi] i.on {
+            background: var(--mag);
+            box-shadow: 0 0 8px var(--mag);
+        }
+
+        .meter-scale {
+            display: flex;
+            justify-content: space-between;
+            margin-top: -6px;
+            font: 0.6rem 'Share Tech Mono', monospace;
+            color: #5f97a4;
+            letter-spacing: 0.1em;
+        }
+
+        .tap-btn.hit {
+            animation: hit 0.3s;
+        }
+
+        @keyframes hit {
+
+            0% {
+                filter: brightness(2);
+                transform: scale(0.96);
+            }
+
+            100% {
+                filter: none;
+                transform: none;
+            }
+        }
+
+        .ghost-suggestion-box::before {
+            content: '> SCAN RESULT';
+            display: block;
+            font: 0.62rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.2em;
+            color: var(--mag);
+            margin-bottom: 6px;
+        }
+
+        /* ======== EVIDENCE ADVISOR ======== */
+
+        .advisor {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            font: 0.82rem 'Share Tech Mono', monospace;
+            color: #9fd3de;
+            padding: 10px 12px;
+            border: 1px dashed var(--border-glow);
+            background: rgba(0, 229, 255, 0.04);
+        }
+
+        .advisor b {
+            color: var(--neon-blue);
+        }
+
+        .advisor .adv-ok {
+            color: var(--hunt-safe);
+            font-size: 1rem;
+        }
+
+        .advisor .adv-bad {
+            color: var(--mag);
+        }
+
+        .adv-chip {
+            background: transparent;
+            border: 1px solid var(--border-glow);
+            color: var(--ice-white);
+            padding: 5px 10px;
+            cursor: pointer;
+            font: 700 0.72rem 'Share Tech Mono', monospace;
+            clip-path: var(--cut-s);
+            transition: 0.2s;
+        }
+
+        .adv-chip:hover {
+            background: var(--neon-blue);
+            color: #02070c;
+        }
+
+        .adv-chip small {
+            color: var(--yel);
+        }
+
+        .adv-chip:hover small {
+            color: #02070c;
+        }
+
+        .adv-copy {
+            margin-left: auto;
+            border-color: var(--mag);
+            color: var(--mag);
+        }
+
+        /* ======== HUNT TRACKER ======== */
+
+        .hunt-clock {
+            font: 900 2.4rem 'Orbitron', sans-serif;
+            text-align: center;
+            color: var(--neon-blue);
+            text-shadow: 0 0 16px currentColor;
+        }
+
+        .hunt-clock.on {
+            color: var(--hunt-danger);
+            animation: blink2 1s steps(2) infinite;
+        }
+
+        @keyframes blink2 {
+
+            50% {
+                opacity: 0.55;
+            }
+        }
+
+        .hunt-state {
+            text-align: center;
+            font: 0.66rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.16em;
+            color: #6fa3b0;
+        }
+
+        .cool-bar {
+            height: 6px;
+            background: rgba(0, 229, 255, 0.12);
+        }
+
+        .cool-bar i {
+            display: block;
+            height: 100%;
+            width: 0;
+            background: var(--yel);
+            box-shadow: 0 0 10px var(--yel);
+            transition: width 0.5s linear;
+        }
+
+        .hunt-btn {
+            width: 100%;
+            background: var(--neon-blue);
+            border: 0;
+            color: #02070c;
+            padding: 13px;
+            cursor: pointer;
+            font: 900 0.78rem 'Orbitron', sans-serif;
+            letter-spacing: 0.1em;
+            clip-path: var(--cut-s);
+            transition: 0.2s;
+        }
+
+        .hunt-btn.on {
+            background: var(--hunt-danger);
+            color: #fff;
+        }
+
+        .demon-chk {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            font: 0.72rem 'Share Tech Mono', monospace;
+            color: #9fd3de;
+            cursor: pointer;
+        }
+
+        .hunt-stats {
+            font: 0.74rem 'Share Tech Mono', monospace;
+            color: #9fd3de;
+            line-height: 1.5;
+        }
+
+        .hunt-stats b {
+            color: var(--yel);
+        }
+
+        .hunt-log {
+            font: 0.72rem 'Share Tech Mono', monospace;
+            color: #6fa3b0;
+            line-height: 1.6;
+        }
+
+        /* ======== FIELD NOTES ======== */
+
+        .note-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        #notes {
+            width: 100%;
+            min-height: 130px;
+            resize: vertical;
+            background: #031017;
+            border: 1px solid var(--border-glow);
+            color: var(--ice-white);
+            padding: 10px;
+            font: 0.85rem 'Share Tech Mono', monospace;
+            outline: none;
+        }
+
+        #notes:focus {
+            border-color: var(--neon-blue);
+        }
+
+        .hero p b {
+            color: var(--neon-blue);
+        }
+    </style>
+
+    <style id="mini-style">
+        /* ======== MINI-PLAYER (floating map window) ======== */
+        .mini {
+            --c: #00e5ff;
+            position: fixed;
+            z-index: 950;
+            display: flex;
+            flex-direction: column;
+            width: 420px;
+            height: 300px;
+            min-width: 260px;
+            min-height: 190px;
+            max-width: 96vw;
+            max-height: 90vh;
+            background: #031017;
+            border: 1px solid var(--c);
+            box-shadow: 0 0 30px rgba(0, 229, 255, 0.35), 0 12px 40px rgba(0, 0, 0, 0.7);
+            overflow: hidden;
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        .mini[hidden] {
+            display: none;
+        }
+
+        /* default: pinned in the top-right corner next to the GHOSTLAB title; scrolls away with the page */
+        .mini.docked {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+
+        .mini-bar {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px;
+            background: linear-gradient(90deg, #06222d, #12051a);
+            border-bottom: 1px solid var(--c);
+            cursor: grab;
+            touch-action: none;
+            user-select: none;
+        }
+
+        .mini-select {
+            flex: 1;
+            min-width: 0;
+            padding: 5px;
+            background: #031017;
+            color: #d7f8ff;
+            border: 1px solid rgba(0, 229, 255, 0.4);
+            font: 0.72rem 'Share Tech Mono', monospace;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .mini-bar button {
+            width: 28px;
+            height: 26px;
+            background: transparent;
+            border: 1px solid var(--c);
+            color: var(--c);
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .mini-bar button:hover {
+            background: var(--c);
+            color: #02070c;
+        }
+
+        .mini-view {
+            position: relative;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+            cursor: grab;
+            touch-action: none;
+        }
+
+        .mini-view img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            max-width: none;
+            transform-origin: 0 0;
+            user-select: none;
+            -webkit-user-drag: none;
+        }
+
+        .mini-msg {
+            position: absolute;
+            inset: 0;
+            display: grid;
+            place-content: center;
+            padding: 16px;
+            text-align: center;
+            font-size: 0.8rem;
+            line-height: 1.5;
+            color: #6fa3b0;
+        }
+
+        .mini-msg[hidden],
+        .mini-view img[hidden] {
+            display: none;
+        }
+
+        /* corner handles for resizing */
+        .mini-grip {
+            position: absolute;
+            bottom: 0;
+            z-index: 6;
+            width: 20px;
+            height: 20px;
+            touch-action: none;
+        }
+
+        .grip-br {
+            right: 0;
+            cursor: nwse-resize;
+            background: linear-gradient(135deg, transparent 50%, var(--c) 50%, var(--c) 58%, transparent 58%, transparent 70%, var(--c) 70%, var(--c) 78%, transparent 78%);
+        }
+
+        .grip-bl {
+            left: 0;
+            cursor: nesw-resize;
+            background: linear-gradient(225deg, transparent 50%, var(--c) 50%, var(--c) 58%, transparent 58%, transparent 70%, var(--c) 70%, var(--c) 78%, transparent 78%);
+        }
+
+        .mini-grip:hover {
+            filter: drop-shadow(0 0 4px var(--c));
+        }
+
+        .mini.docked .grip-br,
+        .mini.in-pip .mini-grip {
+            display: none;                    /* pinned to the top-right corner: only the left corner can grow it */
+        }
+
+        /* when popped out into its own always-on-top window */
+        .mini.in-pip {
+            position: fixed !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            max-width: none;
+            max-height: none;
+            resize: none;
+            border: 0;
+            box-shadow: none;
+        }
+
+        .mini.in-pip .mini-bar {
+            cursor: default;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Background particles (drawn by the "effects" section in the script) -->
+    <canvas id="fx"></canvas>
+
+    <!-- Smudge timer sound (keep the mp3 next to this file) -->
+    <audio id="timer-audio" src="../sound/dragon-studio-clock-ticking-sfx-467486.mp3" preload="auto"></audio>
+
+    <button class="menu-toggle" id="menu-toggle">
+        <span id="menu-icon">☰</span>
+        <span id="menu-text">LAB TOOLS</span>
+    </button>
+
+    <!-- Hotkeys panel: opens with the ? button or the ? key -->
+    <button class="hk-btn" id="hk-btn" title="Skróty klawiszowe (?)" aria-label="Pokaż skróty klawiszowe">?</button>
+    <div class="hk-overlay" id="hk-overlay">
+        <div class="hk-panel" role="dialog" aria-modal="true" aria-labelledby="hk-title">
+            <div class="hk-head">
+                <h2 id="hk-title">⌨ SKRÓTY KLAWISZOWE</h2>
+                <button class="hk-close" id="hk-close">ZAMKNIJ [Esc]</button>
+            </div>
+            <div class="hk-list">
+                <span class="hk-keys"><kbd>/</kbd></span>
+                <span class="hk-text">Szukaj ducha<small>ustawia kursor w polu wyszukiwania</small></span>
+
+                <span class="hk-keys"><kbd>1</kbd><kbd>–</kbd><kbd>7</kbd></span>
+                <span class="hk-text">Zaznacz dowód: ✔ mamy, drugi raz ✖ wykluczony, trzeci raz czyści<small>1 EMF 5 · 2 Spirit Box · 3 Ultraviolet · 4 DOTS · 5 Ghost Writing · 6 Ghost Orbs · 7 Freezing</small></span>
+
+                <span class="hk-keys"><kbd>H</kbd></span>
+                <span class="hk-text">Start / koniec polowania<small>uruchamia Hunt Tracker i odliczanie cooldownu</small></span>
+
+                <span class="hk-keys"><kbd>F</kbd></span>
+                <span class="hk-text">Obróć wszystkie karty duchów</span>
+
+                <span class="hk-keys"><kbd>Tab</kbd><kbd>Enter</kbd></span>
+                <span class="hk-text">Obróć wybraną kartę<small>Tab przechodzi po kartach, Enter lub Spacja obraca zaznaczoną</small></span>
+
+                <span class="hk-keys"><kbd>Esc</kbd></span>
+                <span class="hk-text">Zamknij obrócone karty lub ten panel</span>
+
+                <span class="hk-keys"><kbd>?</kbd></span>
+                <span class="hk-text">Pokaż / ukryj ten panel</span>
+            </div>
+            <div class="hk-note">Skróty nie działają, gdy piszesz w polu tekstowym (np. w notatkach lub wyszukiwarce).</div>
+        </div>
+    </div>
+
+    <!-- ============================ SIDEBAR TOOLS ============================ -->
+    <aside class="sidebar" id="sidebar">
+        <div class="brand">GHOST<span>LAB.</span></div>
+
+        <!-- Guides -->
+        <section class="sidebar-widget guides-widget">
+            <div class="widget-title">✦ Guides</div>
+            <div class="guides-links">
+                <a class="maps-link" href="maps.html"><span>🗺️</span><span>MAPY — UKŁADY MAP</span></a>
+                <a class="maps-link" href="cursed.html"><span>☠️</span><span>PRZEKLĘTE PRZEDMIOTY</span></a>
+                <a class="maps-link" href="equipment.html"><span>🧰</span><span>SPRZĘT — PRZEWODNIK</span></a>
+                <a class="maps-link" href="glossary.html"><span>📚</span><span>SŁOWNIK POJĘĆ</span></a>
+            </div>
+        </section>
+
+
+        <!-- Smudge timer -->
+        <section class="sidebar-widget">
+            <div class="widget-title">✦ Smudge Timers</div>
+            <div class="ring" id="ring">
+                <div class="ring-in">
+                    <div id="t-val">READY</div>
+                    <small id="t-sub">SELECT SMUDGE</small>
+                </div>
+            </div>
+            <div class="timer-grid">
+                <button class="timer-btn" data-seconds="60"><span>DEMON</span><b>60s</b></button>
+                <button class="timer-btn" data-seconds="90"><span>NORMAL</span><b>90s</b></button>
+                <button class="timer-btn" data-seconds="180"><span>SPIRIT</span><b>180s</b></button>
+            </div>
+        </section>
+
+        <!-- Hunt tracker -->
+        <section class="sidebar-widget">
+            <div class="widget-title">✦ Hunt Tracker</div>
+            <div class="hunt-clock" id="hunt-clock">00:00</div>
+            <div class="hunt-state" id="hunt-state">BRAK POLOWANIA</div>
+            <div class="cool-bar"><i id="cool-fill"></i></div>
+            <button class="hunt-btn" id="hunt-btn">▶ START POLOWANIA [H]</button>
+            <label class="demon-chk">
+                <input type="checkbox" id="demon-chk"> Demon (cooldown 20s zamiast 25s)
+            </label>
+            <div class="hunt-stats" id="hunt-stats">Polowania: 0</div>
+            <div class="hunt-log" id="hunt-log"></div>
+            <button class="adv-chip" id="hunt-reset">↺ RESET SESJI</button>
+        </section>
+
+        <!-- Speed detector -->
+        <section class="sidebar-widget">
+            <div class="widget-title">✦ Speed Detector</div>
+            <div class="bpm-container">
+                <input type="number" id="bpm-input" placeholder="BPM">
+                <div id="speed-res">
+                    <span id="speed-val-out">0.00</span>
+                    <span class="unit-label">m/s</span>
+                </div>
+            </div>
+            <div class="meter" id="meter"></div>
+            <div class="meter-scale">
+                <span>0</span><span>1</span><span>2</span><span>3</span><span>4 m/s</span>
+            </div>
+            <button class="tap-btn" id="tap-btn">[ TAP TO SYNC ]</button>
+            <div class="ghost-suggestion-box" id="ghost-suggestions"></div>
+        </section>
+
+        <!-- Field notes -->
+        <section class="sidebar-widget">
+            <div class="widget-title">✦ Field Notes</div>
+            <div class="note-tags">
+                <button class="adv-chip" data-note="Pokój ducha: ">POKÓJ</button>
+                <button class="adv-chip" data-note="Imię / wiek (Ouija): ">OUIJA</button>
+                <button class="adv-chip" data-note="Sanity przy polowaniu: ">SANITY</button>
+                <button class="adv-chip" data-note="Prędkość: ">SPEED</button>
+                <button class="adv-chip adv-copy" id="notes-clear">🗑</button>
+            </div>
+            <textarea id="notes" placeholder="Notatki ze śledztwa (zapisują się automatycznie)..."></textarea>
+        </section>
+    </aside>
+
+    <!-- ============================== MAIN PAGE ============================== -->
+    <main class="content">
+        <header class="hero">
+            <div class="eyebrow">[ NEURAL GHOST DATABASE // Link Established ]</div>
+            <h1>GHOSTLAB</h1>
+            <p>
+                <b id="total">0</b> duchów w kartotece. Wybierz dowody, odfiltruj podejrzanych
+                i kliknij kartę, aby poznać strategię 0-evidence. 👻
+            </p>
+        </header>
+
+        <div class="top-controls">
+            <div class="search-row">
+                <input type="text" id="search" placeholder="🧬 Analiza podmiotu (np. Nazwa)...">
+                <select id="sort" title="Sortowanie">
+                    <option value="az">Sortuj: A → Z</option>
+                    <option value="speed">Sortuj: najwolniejsze</option>
+                    <option value="hunt">Sortuj: najwyższy próg ataku</option>
+                </select>
+                <span class="count" id="count"></span>
+                <button class="reset-btn" id="reset-filters">↺ RESET</button>
+                <button class="flip-btn" id="flip-all" title="Obróć wszystkie karty (F)">🔄 OBRÓĆ KARTY</button>
+            </div>
+
+            <div class="advisor" id="advisor"></div>
+
+            <div class="filter-hint">
+                Klik na dowód: ✔ mamy · drugi raz: ✖ wykluczony · trzeci: wyczyść.
+                Na karcie: ★ ulubiony, ✖ odrzuć ducha.
+                Skróty: „/” szuka · 1 EMF, 2 Box, 3 UV, 4 DOTS, 5 Writing, 6 Orbs, 7 Freezing · H polowanie · F obróć wszystkie karty · Esc zamyka karty · ? lista skrótów.
+            </div>
+
+            <div class="evidence-filters" id="evidence-filters">
+                <button class="ev-btn" data-evidence="EMF">⚡ EMF 5</button>
+                <button class="ev-btn" data-evidence="Box">📻 Spirit Box</button>
+                <button class="ev-btn" data-evidence="Ultraviolet">🔮 Ultraviolet</button>
+                <button class="ev-btn" data-evidence="DOTS">✨ DOTS</button>
+                <button class="ev-btn" data-evidence="Writing">📖 Ghost Writing</button>
+                <button class="ev-btn" data-evidence="Orbs">🟡 Ghost Orbs</button>
+                <button class="ev-btn" data-evidence="Freezing">❄️ Freezing Temps</button>
+            </div>
+        </div>
+
+        <div class="grid" id="ghost-grid"></div>
+        <div class="empty" id="empty"><em>🕯️</em>Cisza... żaden duch nie pasuje do tych dowodów.</div>
+    </main>
+
+    <script>
+        "use strict";
+
+        /* ==========================================================================
+           GHOSTLAB // CYBER  -  Phasmophobia ghost field guide
+
+           1.  Ghost data & zero-evidence guides
+           2.  Small helpers
+           3.  App state
+           4.  Ghost cards (build + render)
+           5.  Evidence filters, search & sorting
+           6.  Evidence advisor
+           7.  Smudge timer
+           8.  Speed detector
+           9.  Hunt tracker
+           10. Field notes
+           11. Visual effects
+           12. Keyboard shortcuts
+           13. Start-up
+           ========================================================================== */
+
+
+        /* ==========================================================================
+           1. GHOST DATA
+           Every ghost has: name, evidence[], sanity (hunt threshold), speed, pro
+           (investigation notes) and an optional desc (0-evidence guide, shown on the
+           back of the card). A "desc" written here beats the shared guides below.
+           ========================================================================== */
+
+        /* Builds a row of 🎙 buttons for the 0-evidence text. One button per sound:
+             mics("banshee", ["link-1", "link-2", "link-3", "link-4"])
+           Each link can be a web address or a file path, e.g. "../sound/banshee-1.mp3".
+           An empty "" means no sound yet - that button just shakes when clicked. */
+        function mics(group, sounds) {
+            const buttons = sounds.map((src, i) =>
+                `<button type="button" class="mic-btn" data-src="${src.replace(/"/g, "&quot;")}" title="Odtwórz dźwięk" aria-label="Odtwórz dźwięk: ${group} ${i + 1}">🎙</button>`
+            ).join("");
+            return `<span class="mic-row">${buttons}</span>`;
+        }
+
+        const ghosts = [
+             { 
+                name: "Banshee", 
+                evidence: ["Ultraviolet", "Ghost Orbs", "DOTS"], 
+                sanity: "50%", 
+                speed: "1.7 m/s", 
+                pro: "• Może być tylko kobietą (imię i model).<br>" +
+                     "• <b>33% szans</b> na wydanie 1 z 20 unikalnych krzyków przez mikrofon paraboliczny.<br>" +
+                     "• Poluje na podstawie sanity celu, nie średniej grupy.<br>" +
+                     "• Podczas huntu ściga tylko swoją ofiarę (jeśli jest wewnątrz).<br>" +
+                     "• Cel traci <b>15% sanity</b> przy dotknięciu ducha podczas śpiewania (zamiast 10%).<br>" +
+                     "• Preferuje eventy ze śpiewem.<br>" +
+                     "• W stanie DOTS wędruje w stronę celu.<br>" +
+                     "• <b>66% szans</b> na podejście do celu bez zostawiania EMF.<br>" +
+                     "• Atakuje przy 50% sanity celu (nawet jeśli cel jest na zewnątrz, co może oznaczać atak przy 87% średniej grupy).",
+                desc:"• <b>Nasłuchuj ducha za pomocą mikrofonu parabolicznego</b> – jeśli usłyszysz <b>unikalny krzyk</b>, jest to <b>Banshee</b>. " + mics("banshee", ["../sound/banshee1.mp3", "../sound/banshee2.mp3", "../sound/banshee3.mp3", "../sound/banshee4.mp3"]) + "<br>" +
+                     "• W trybie wieloosobowym niech wszyscy gracze będą w środku podczas polowania. Jeśli duch <b>nie ściga graczy, którzy nie są jego celem</b>, lub jeśli tacy gracze mogą <b>dotknąć ducha bez ryzyka śmierci</b>, jest to <b>Banshee</b>.<br>" +
+                     "• Rozmieść <b>czujniki ruchu</b> na mapie. Użyj ich, aby sprawdzić, czy duch <b>często wędruje w stronę jednego z graczy</b>. Jeśli tak, może to być <b>Banshee</b>.<br>" + 
+                     "•Jeśli duch ma <b>męski model postaci lub męskie imię</b>, <b>nie jest to Banshee</b>.<br>"
+            },
+            { 
+                name: "Dayan", 
+                evidence: ["Ultraviolet", "Ghost Writing", "DOTS"], 
+                sanity: "65% / 45% / 50%", 
+                speed: "1.2 - 2.25 m/s", 
+                pro: "• Może być tylko kobietą (imię i model).<br>" +
+                     "• Prędkość huntu i próg ataku zależą od ruchu gracza w pobliżu:<br>" +
+                     "&nbsp;&nbsp;- <b>65%</b> gdy gracz idzie blisko ducha.<br>" +
+                     "&nbsp;&nbsp;- <b>45%</b> gdy gracz stoi nieruchomo blisko ducha.<br>" +
+                     "&nbsp;&nbsp;- <b>50%</b> gdy gracz jest daleko.<br>" +
+                     "• Prędkość poruszania się:<br>" +
+                     "&nbsp;&nbsp;- <b>2.25m/s</b> jeśli najbliższy gracz idzie w promieniu 10m.<br>" +
+                     "&nbsp;&nbsp;- <b>1.2m/s</b> jeśli najbliższy gracz stoi w promieniu 10m.<br>" +
+                     "&nbsp;&nbsp;- <b>1.7m/s</b> jeśli wszyscy gracze są dalej niż 10m.<br>" +
+                     "• Przyspieszenie wzrokowe (LOS) działa tylko powyżej 10m od graczy. Poniżej 10m nie przyspiesza w zasięgu wzroku, ale bonus ten nadal kumuluje się w tle.",
+
+
+            },
+            { 
+                name: "Demon", 
+                evidence: ["Ultraviolet", "Ghost Writing", "Freezing Temps"], 
+                sanity: "70% / Dowolne", 
+                speed: "1.7 m/s", 
+                pro: "• Może zaatakować przy <b>dowolnym sanity</b> (umiejętność specjalna).<br>" +
+                     "• Standardowy próg ataku to <b>70%</b>.<br>" +
+                     "• Może polować już po <b>60 sekundach</b> od użycia kadzidła (zamiast standardowych 90s).<br>" +
+                     "• Przerwa między polowaniami (lub po użyciu krzyża) wynosi tylko <b>20 sekund</b> (zamiast 25s).<br>" +
+                     "• Zasięg Krzyża (Crucifix) zwiększony o 50% na każdy Tier: <b>4.5m / 6m / 7.5m</b>."
+            },
+            { 
+                name: "Deogen", 
+                evidence: ["Spirit Box", "Ghost Writing", "DOTS"], 
+                sanity: "40%", 
+                speed: "3.0 - 0.4 m/s", 
+                pro: "• <b>33% szans</b> na unikalny ciężki oddech przez Spirit Box w zasięgu 1m od ducha.<br>" +
+                     "• Bardzo szybki, gdy jest daleko (3.0 m/s), ale zwalnia drastycznie blisko gracza (0.4 m/s).<br>" +
+                     "• Jest <b>bardziej widoczny</b> podczas polowań.<br>" +
+                     "• Zawsze posiada LOS (Line of Sight) na gracza – <b>nie da się przed nim ukryć</b>.<br>" +
+                     "• Gwarantowany Spirit Box na poziomach Nightmare/Insanity."
+            },
+            {
+                name: "Gallu",
+                evidence: ["EMF 5", "Ultraviolet", "Spirit Box"],
+                sanity: "40% / 50% / 60%",
+                speed: "1.36 - 1.96 m/s",
+                pro: "• Przechodzi przez 3 cykliczne stany zmieniające zachowanie:<br>" +
+                     "&nbsp;&nbsp;- <b>Normalny:</b> Próg 50%, Prędkość 1.7 m/s.<br>" +
+                     "&nbsp;&nbsp;- <b>Wściekły (Enraged):</b> Próg 60%, Prędkość 1.96 m/s.<br>" +
+                     "&nbsp;&nbsp;- <b>Osłabiony (Weakened):</b> Próg 40%, Prędkość 1.36 m/s.<br>" +
+                     "• Cykle zmieniają się w czasie, co sprawia, że duch jest nieprzewidywalny pod kątem agresji."
+            },
+            {
+                name: "Goryo",
+                evidence: ["EMF 5", "Ultraviolet", "DOTS"],
+                sanity: "50%",
+                speed: "1.7 m/s",
+                pro: "• <b>Projektor DOTS</b> jest widoczny tylko przez kamerę wideo i tylko wtedy, gdy w pokoju nie ma gracza.<br>" +
+                     "• Nigdy nie zmienia swojego ulubionego pokoju.<br>" +
+                     "• Bardzo rzadko oddala się od swojego pokoju (mały zasięg roamingu).<br>" +
+                     "• Częściej niż inne duchy wchodzi w stan DOTS.<br>" +
+                     "• <b>Gwarantowany DOTS</b> na poziomach Nightmare/Insanity."
+            },
+            {
+                name: "Hantu",
+                evidence: ["Ultraviolet", "Ghost Orbs", "Freezing Temps"],
+                sanity: "50%",
+                speed: "1.4 - 2.7 m/s",
+                pro: "• Podczas polowania widać jego <b>mroźny oddech</b>, jeśli bezpiecznik jest wyłączony lub zepsuty.<br>" +
+                     "• Nigdy nie włącza bezpiecznika; bardzo często go wyłącza.<br>" +
+                     "• Prędkość zależy od temperatury: jest znacznie szybszy w zimnych pomieszczeniach (do 2.7 m/s) i wolniejszy w ciepłych.<br>" +
+                     "• <b>Nie przyspiesza</b> w zasięgu wzroku (brak Line-of-Sight speed-up).<br>" +
+                     "• <b>Gwarantowane ujemne temperatury</b> na poziomach Nightmare/Insanity."
+            },
+            {
+                name: "Jinn",
+                evidence: ["EMF 5", "Ultraviolet", "Freezing Temps"],
+                sanity: "50%",
+                speed: "1.7 - 2.5 m/s",
+                pro: "• Gdy bezpiecznik jest włączony, przyspiesza do <b>2.5 m/s</b>, jeśli widzi gracza (LOS) w odległości większej niż 3m.<br>" +
+                     "• Umiejętność specjalna: Przy włączonym prądzie może obniżyć sanity gracza o <b>25%</b> (w promieniu 3m lub w tym samym pokoju), zostawiając EMF 2/5 przy bezpieczniku.<br>" +
+                     "• <b>Nigdy</b> nie wyłącza bezpiecznika bezpośrednio.<br>" +
+                     "• Gdy warunek 2.5 m/s jest spełniony, standardowe przyspieszenie LOS nie jest nakładane, ale nadal 'ładuje się' w tle."
+            },
+            {
+                name: "Mare",
+                evidence: ["Spirit Box", "Ghost Orbs", "Ghost Writing"],
+                sanity: "40% / 60%",
+                speed: "1.7 m/s",
+                pro: "• Próg ataku zależy od światła w pokoju ducha: <b>40% sanity</b> (światło zapalone), <b>60% sanity</b> (światło zgaszone/rozbite).<br>" +
+                     "• Umiejętność: Może <b>natychmiast</b> zgasić światło, które gracz właśnie zapalił (w promieniu 4m).<br>" +
+                     "• Jako jedyny duch może użyć przełącznika światła <b>podczas eventu</b>.<br>" +
+                     "• Nigdy nie zapala świateł (ani TV/komputerów). Nie potrafi 'mrugać' światłem przy użyciu EMF 2.<br>" +
+                     "• Częściej wykonuje eventy z rozbijaniem żarówek i częściej zmienia pokój, gdy pali się w nim światło" 
+            },
+            {
+                name: "Moroi",
+                evidence: ["Spirit Box", "Ghost Writing", "Freezing Temps"],
+                sanity: "50%",
+                speed: "1.5 - 2.25 m/s",
+                pro: "• <b>Klątwa:</b> Nakłada klątwę na gracza, gdy ten usłyszy: odpowiedź na Spirit Boxie, dźwięk w mikrofonie parabolicznym lub nagrany dźwięk na rejestratorze. Powoduje to <b>2x szybszy pasywny spadek sanity</b> (nawet w świetle).<br>" +
+                     "• Czas oślepienia kadzidłem podczas polowania jest wydłużony z 5s do <b>7s</b>.<br>" +
+                     "• Prędkość bazowa zależy od średniego <b>sanity</b>; przy 0% i ciągłym LOS może osiągnąć aż <b>3.71 m/s</b>.<br>" +
+                     "• <b>Gwarantowany Spirit Box</b> na poziomach Nightmare/Insanity."
+            },
+            {
+                name: "Myling",
+                evidence: ["EMF 5", "Ultraviolet", "Ghost Writing"],
+                sanity: "50%",
+                speed: "1.7 m/s",
+                pro: "• Podczas polowania kroki i wokal ducha są słyszalne tylko z odległości <b>12m</b> (standardowo jest to 20m).<br>" +
+                     "• Znacznie częściej niż inne duchy wydaje dźwięki przez mikrofon paraboliczny oraz rejestrator dźwięku.<br>" +
+                     "• Jeśli słyszysz latarkę/elektronikę, ale nie słyszysz kroków – to prawdopodobnie Myling."
+            },
+            {
+                name: "Obake",
+                evidence: ["EMF 5", "Ultraviolet", "Ghost Orbs"],
+                sanity: "50%",
+                speed: "1.7 m/s",
+                pro: "• <b>Unikalny odcisk:</b> Ma szansę zostawić odcisk dłoni z 6 palcami.<br>" +
+                     "• Podczas polowania przynajmniej raz <b>zmieni model ducha</b> na ułamek sekundy (mrugnięcie).<br>" +
+                     "• Ma 25% szans na <b>niezostawienie</b> śladów UV (w tym odcisków stóp) mimo interakcji.<br>" +
+                     "• Odciski palców mogą znikać 2x szybciej niż u innych duchów.<br>" +
+                     "• 25% szans na brak dźwięku kroku podczas eventu.<br>" +
+                     "• <b>Gwarantowane Ultraviolet</b> na poziomach Nightmare/Insanity."
+            },
+            {
+                name: "Obambo",
+                evidence: ["Ghost Writing", "Ultraviolet", "DOTS"],
+                sanity: "10% / 65%",
+                speed: "1.45 - 1.96 m/s",
+                pro: "• Co 2 minuty przełącza się między stanem <b>Spokojnym</b> a <b>Agresywnym</b> (timer startuje po otwarciu drzwi wejściowych).<br>" +
+                     "• Próg ataku: <b>65% sanity</b> (Agresywny) / <b>10% sanity</b> (Spokojny).<br>" +
+                     "• Prędkość: <b>1.96 m/s</b> (Agresywny) / <b>1.45 m/s</b> (Spokojny).<br>" +
+                     "• Czas trwania polowania jest <b>skrócony o 20%</b>, jeśli zacznie się ono w stanie Agresywnym.<br>" +
+                     "• Duch potrafi zmienić stan (i prędkość) w trakcie trwania polowania."
+            },
+           {
+                name: "Oni",
+                evidence: ["EMF 5", "Freezing Temps", "DOTS"],
+                sanity: "50%",
+                speed: "1.7 m/s",
+                pro: "• Podczas eventów zabiera <b>20% sanity</b> (zamiast standardowych 10%).<br>" +
+                     "• <b>Nigdy</b> nie wykonuje eventu 'Ghost Mist' (biała chmura/mgiełka).<br>" +
+                     "• Podczas polowania mruga znacznie szybciej, przez co jest <b>lepiej widoczny</b>.<br>" +
+                     "• Znacznie bardziej aktywny, gdy w pobliżu znajduje się wielu graczy.<br>" +
+                     "• Ma większą szansę na pojawienie się jako pełny model ducha podczas eventów."
+            },
+            {
+                name: "Onryo",
+                evidence: ["Spirit Box", "Ghost Orbs", "Freezing Temps"],
+                sanity: "40% / 60% / 100%",
+                speed: "1.7 m/s",
+                pro: "• Płomienie działają jak krzyże (zasięg 4m). Duch nada im priorytet nad prawdziwym krzyżem.<br>" +
+                     "• <b>Umiejętność:</b> Po zdmuchnięciu co trzeciego płomienia spróbuje polować przy <b>dowolnym sanity</b>.<br>" +
+                     "• Szansa na zdmuchnięcie rośnie wraz z liczbą martwych graczy.<br>" +
+                     "• Próg ataku: <b>60% sanity</b> (normalnie) / <b>40% sanity</b> (gdy w pobliżu palą się ognie).<br>" +
+                     "• Jako jedyny może zgasić to samo źródło ognia dwa razy w ciągu 20s. Nigdy nie zapala ognia."
+            },
+            {
+                name: "Phantom",
+                evidence: ["Spirit Box", "Ultraviolet", "DOTS"],
+                sanity: "50%",
+                speed: "1.7 m/s",
+                pro: "• Nie pojawia się na zdjęciach ani filmach typu „Ghost” (widoczny jednak jako „Translucent”, „Shadow”, „DOTS” lub „Hunting”).<br>" +
+                     "• Zrobienie zdjęcia lub nagranie ducha (również w stanie DOTS) powoduje jego natychmiastowe zniknięcie.<br>" +
+                     "• Jest znacznie słabiej widoczny podczas polowania (rzadsze mruganie).<br>" +
+                     "• Gracz traci <b>0.5% sanity na sekundę</b>, będąc w zasięgu bicia serca podczas polowań i eventów.<br>" +
+                     "• <b>Umiejętność:</b> Może podejść do losowego gracza, zostawiając EMF 2 w miejscu, do którego zawędrował (na wysokości głowy)."
+            },
+            {
+                name: "Poltergeist",
+                evidence: ["Spirit Box", "Ultraviolet", "Writing"],
+                sanity: "50%",
+                speed: "1.7 m/s",
+                pro: "• Podczas polowań rzuca przedmiotem co 0.5s ze zwiększoną siłą.<br>" +
+                     "• Ma znacznie wyższą szansę na rzucanie przedmiotami i interakcje z otoczeniem.<br>" +
+                     "• Potrafi rzucać obiektami szybciej i na większą odległość.<br>" +
+                     "• <b>Eksplozja Poltergeista:</b> Rzuca wieloma przedmiotami naraz, obniżając pobliskim graczom <b>sanity o 2%</b> za każdy wyrzucony przedmiot (istnieją 4 rodzaje rzutów).<br>" +
+                     "• Jedyny duch, który może rzucić przedmiotem, gdy znajduje się w zapalonym pomieszczeniu."
+            },
+            {
+                name: "Raiju",
+                evidence: ["EMF 5", "Ghost Orbs", "DOTS"],
+                sanity: "50% / 65%",
+                speed: "1.7 - 2.5 m/s",
+                pro: "• Podczas eventów i polowań zakłóca elektronikę w zasięgu 15m (zamiast standardowych 10m).<br>" +
+                     "• Zwiększona prędkość podczas polowania, gdy aktywna elektronika znajduje się w promieniu odpowiednio 6m, 8m lub 10m (mapy Małe, Średnie, Duże).<br>" +
+                     "• Posiada głośniejszy dźwięk bicia serca niż inne duchy.<br>" +
+                     "• Może zacząć polowanie przy <b>65% sanity</b>, jeśli znajduje się w pobliżu aktywnego sprzętu graczy.<br>" +
+                     "• Prędkość wynosi <b>2.5 m/s</b> w zasięgu elektroniki, w przeciwnym razie 1.7 m/s.<br>" +
+                     "• Posiada przyspieszenie LOS (Line of Sight), gdy jest poza zasięgiem elektroniki. W zasięgu sprzętu bonus LOS nie jest nakładany, ale nadal nalicza się w tle."
+            },
+            {
+                name: "Revenant",
+                evidence: ["Ghost Orbs", "Writing", "Freezing Temps"],
+                sanity: "50%",
+                speed: "1.0 - 3.0 m/s",
+                pro: "• Podczas polowania jest bardzo powolny (1.0 m/s), dopóki nie wykryje gracza (głos, aktywna elektronika lub LOS).<br>" +
+                     "• Po wykryciu gracza natychmiast przyspiesza do <b>3.0 m/s</b> i utrzymuje tę prędkość, aż dotrze do ostatniej znanej lokalizacji gracza.<br>" +
+                     "• Po dotarciu do celu, jeśli nie widzi już gracza, stopniowo zwalnia z powrotem do 1.0 m/s.<br>" +
+                     "• Prędkość wynosi <b>3.0 m/s</b>, gdy gracz jest wykryty, w przeciwnym razie 1.0 m/s."
+            },
+            {
+                name: "Shade",
+                evidence: ["EMF 5", "Writing", "Freezing Temps"],
+                sanity: "35%",
+                speed: "1.7 m/s",
+                pro: "• Jedyny duch, który może pojawić się jako „Shadow Ghost” podczas użycia Summoning Circle, Music Box i Monkey Paw.<br>" +
+                     "• Nie potrafi wykonywać eventów ze śpiewem (Singing Ghost Events).<br>" +
+                     "• Nie potrafi wykonać interakcji „podnieś i rzuć w gracza”.<br>" +
+                     "• Podczas eventów preferuje model cienia.<br>" +
+                     "• Nie rozpocznie polowania, jeśli znajduje się w tym samym pomieszczeniu co gracz.<br>" +
+                     "• Nie wykonuje eventów w tym samym pokoju (może jednak zacząć event na zewnątrz i przeteleportować się do gracza).<br>" +
+                     "• Nie wykonuje interakcji EMF 2, 3 ani 5 (w tym pisania i gaszenia ognia), będąc w tym samym pokoju (może jednak stanąć tuż za progiem i wejść w interakcję z obiektem wewnątrz).<br>" +
+                     "• Wykonuje więcej eventów przy niższym średnim <b>sanity</b> (nie robi ich wcale przy 100%).<br>" +
+                     "• Nie zdmuchuje źródeł ognia podczas polowania, jeśli jest w tym samym pokoju co gracz.<br>" +
+                     "• Próg ataku: <b>35% sanity</b>."
+            },
+                        {
+                name: "Spirit",
+                evidence: ["Spirit Box", "Writing", "EMF 5"],
+                sanity: "50%",
+                speed: "1.7 m/s",
+                pro: "• Po użyciu kadzidła (Smudge Sticks) duch nie może rozpocząć polowania przez <b>180 sekund</b>, zamiast standardowych 90 sekund.<br>" +
+                     "• Nie posiada żadnych unikalnych cech ani umiejętności poza wydłużonym czasem blokady ataku po okadzeniu."
+            },
+            {
+                name: "Thaye",
+                evidence: ["Ghost Orbs", "Writing", "DOTS"],
+                sanity: "75% - 15%",
+                speed: "1.0  - 2.75 m/s",
+                pro: "• Odpowiedź dotycząca wieku na Tablicy Ouija rośnie wraz ze starzeniem się ducha (może osiągnąć <b>90+ lat</b>).<br>" +
+                     "• Duch próbuje się postarzeć co 1-2 minuty. Jeśli gracz jest w tym samym pokoju, proces następuje; w przeciwnym razie czeka 30s i próbuje ponownie.<br>" +
+                     "• Jest znacznie bardziej aktywny, gdy jest młodszy.<br>" +
+                     "• Próg ataku: <b>75% sanity</b> (najmłodszy) / <b>15% sanity</b> (najstarszy).<br>" +
+                     "• Prędkość: <b>2.75 m/s</b> (najmłodszy) / <b>1.0 m/s</b> (najstarszy).<br>" +
+                     "• Nie posiada przyspieszenia LOS (Line of Sight) podczas pościgu."
+            },
+            {
+                name: "The Mimic",
+                evidence: ["Spirit Box", "Ultraviolet", "Freezing Temps", "Ghost Orbs (ukryte)"],
+                sanity: "10% / 50% / 100%",
+                speed: "1.7 m/s (zmienna)",
+                pro: "• Zawsze wykazuje Ghost Orbs jako dodatkowy dowód, nawet w trybach z 0 dowodami.<br>" +
+                     "• Naśladuje innego ducha co <b>30-120</b> sekund, przejmując wszystkie jego zachowania, cechy i umiejętności <b>(z wyjątkiem dowodów)</b>.<br>" +
+                     "• Kopiuje zachowanie aktualnie naśladowanego ducha.<br>" +
+                     "• Kopiuje prędkość aktualnie naśladowanego ducha.<br>" +
+                     "• Prowadzi to do niespójnych zachowań i nagłych zmian progów ataku oraz prędkości."
+
+            },
+            {
+                name: "The Twins",
+                evidence: ["EMF 5", "Spirit Box", "Freezing Temps"],
+                sanity: "50%",
+                speed: "1.5 m/s, 1.9 m/s",
+                pro: "• Potrafią wykonać 2 interakcje w tym samym czasie: jedną w standardowym promieniu <b>(2.12m/4.24m) i drugą w rozszerzonym (8.48m/16.97m)</b>.<br>" +
+                     "• Prędkość podczas polowania wynosi <b>1.5 m/s</b> (główny duch) lub <b>1.9 m/s</b> (klon).<br>" +
+                     "• Aktywacja czujników ruchu, nadepnięcie na sól oraz odpowiedzi na Spirit Box występują tylko w fizycznej lokalizacji głównego ducha.<br>" +
+                     "• Prędkość <b>1.5 m/s</b> występuje, gdy polowanie zaczyna się ze standardowego zasięgu, a <b>1.9 m/s</b>, gdy z rozszerzonego."
+            },
+            {
+                name: "Wraith",
+                evidence: ["EMF 5", "Spirit Box", "DOTS"],
+                sanity: "50%",
+                speed: "1.7 m/s",
+                pro: "• Nigdy nie nadepnie na sól ani nie wejdzie z nią w żadną interakcję.<br>" +
+                     "• Nie zostanie spowolniony przez sól poziomu 3 (Tier 3) podczas polowania.<br>" +
+                     "• <b>Umiejętność:</b> Potrafi przeteleportować się do losowego gracza, zostawiając EMF 2 lub EMF 5 w miejscu pojawienia się (na wysokości stóp).<br>" +
+                     "• Po teleportacji duch wraca pieszo do swojego ulubionego pokoju."
+            },
+            {
+                name: "Yokai",
+                evidence: ["Spirit Box", "Ghost Orbs", "DOTS"],
+                sanity: "50% / 80%",
+                speed: "1.7 m/s",
+                pro: "• Zasięg słyszenia/wykrywania graczy podczas polowania jest ograniczony do <b>2.5m</b> lub mniej.<br>" +
+                     "• Kończy event z pozytywką (Music Box), gdy głowa ducha znajduje się 0.5m od niej (zamiast standardowego 1m).<br>" +
+                     "• Staje się znacznie bardziej aktywny, gdy gracze rozmawiają w jego pobliżu.<br>" +
+                     "• Rozmowa w tym samym pokoju co Yokai może sprowokować polowanie już przy <b>80% sanity</b>.<br>" +
+                     "• Próg ataku: <b>80% sanity</b> (podczas mówienia w jego pokoju) / <b>50% sanity</b> (normalnie)."
+            },
+            {
+                name: "Yurei",
+                evidence: ["Ghost Orbs", "Freezing Temps", "DOTS"],
+                sanity: "50%",
+                speed: "1.7 m/s",
+                pro: "• Jedyny duch, który może zamknąć lub wejść w interakcję z drzwiami wyjściowymi poza polowaniem/eventem.<br>" +
+                     "• Podczas interakcji z drzwiami (poza polowaniem) musi je całkowicie otworzyć lub zamknąć.<br>" +
+                     "• Użycie kadzidła (Smudge Sticks) uwięzi ducha w jego pokoju na czas trwania efektu (90s).<br>" +
+                     "• Nie może pokazać dowodu DOTS, będąc pod wpływem kadzidła (90s).<br>" +
+                     "• <b>Umiejętność:</b> Może zatrzasnąć drzwi, obniżając <b>sanity</b> pobliskich graczy o <b>15%</b>, jeśli w pomieszczeniu znajdują się drzwi."
+            },
+                    {
+                name: "Aswang",
+                evidence: ["Freezing Temps", "Ghost Writing", "DOTS"],
+                sanity: "50%",
+                speed: "1.53 - 2.53 m/s",
+                pro: "• Zaczyna każde polowanie <b>wolniej</b> niż większość duchów (<b>1.53 m/s</b>), ale po złapaniu LOS (Line of Sight) przyspiesza <b>szybciej niż jakikolwiek inny duch</b> (do ok. <b>2.53 m/s</b>).<br>" +
+                     "• <b>Nie może zabić</b> gracza ukrytego w oficjalnym schowku (szafa, szafka – tylko te wbudowane w mapę).<br>" +
+                     "• Jeśli wykryje gracza i dotrze do jego schowka, polowanie <b>natychmiast się kończy</b>.<br>" +
+                     "• Następne polowanie po takim zakończeniu <b>idzie prosto do tego gracza</b> i może nie mieć grace period.<br>" +
+                     "• Woli gonić niż szukać – jest mniej groźny, gdy zerwiesz line of sight.<br>" +
+                     "• Kadzidło podczas polowania zatrzymuje go na <b>5 sekund</b>.",
+                desc: "• Podczas polowania wejdź do <b>oficjalnego schowka</b>. Jeśli duch dotrze do niego, a polowanie <b>kończy się bez zabicia</b>, jest to <b>Aswang</b>. Jeśli duch zabije gracza w oficjalnym schowku, <b>nie jest to Aswang</b>.<br>" +
+                      "• Obserwuj <b>prędkość</b>: startuje od <b>1.53 m/s</b> w każdym polowaniu, a po zauważeniu gracza rozpędza się wyraźnie szybciej niż inne duchy. Jeśli bazowa prędkość kiedykolwiek wzrośnie, <b>nie jest to Aswang</b>.<br>" +
+                      "• Jeśli poprzednie polowanie skończyło się w schowku, a następne <b>leci prosto do tego samego gracza</b>, to mocna wskazówka na <b>Aswang</b>.<br>" +
+                      "• Odróżnienie od <b>Revenanta</b>: Revenant bez LOS idzie 1.0 m/s, Aswang 1.53 m/s.<br>"
+            },
+            {
+                name: "Deildegast",
+                evidence: ["EMF 5", "Ghost Writing", "DOTS"],
+                sanity: "50%",
+                speed: "3.0 - 0.4 m/s",
+                pro: "• Każde polowanie zaczyna z prędkością <b>3.0 m/s</b> – jest jednym z najszybszych duchów w grze.<br>" +
+                     "• Każdy <b>unikalny przedmiot</b> przeniesiony lub użyty przed polowaniem spowalnia go o <b>0.1 m/s</b> (minimum <b>0.4 m/s</b> po ok. 26 przedmiotach).<br>" +
+                     "• Prędkość <b>wraca do 3.0 m/s</b> po każdym polowaniu oraz po spaleniu krzyża (Crucifix).<br>" +
+                     "• <b>Nie przyspiesza</b> z line of sight – prędkość jest stała podczas całego polowania.<br>" +
+                     "• Nie posiada umiejętności specjalnej. Próg ataku: <b>50% sanity</b>.<br>" +
+                     "• Spowalniać go mogą także martwi gracze.",
+                desc: "• <b>Nie dotykaj przedmiotów</b> przed polowaniem. Jeśli duch od startu porusza się z prędkością około <b>3.0 m/s</b> i <b>nie przyspiesza z line of sight</b>, jest to <b>Deildegast</b>.<br>" +
+                      "• Przenieś lub rzuć <b>wiele różnych przedmiotów</b> przed kolejnym polowaniem. Jeśli duch jest wyraźnie <b>wolniejszy</b>, to <b>Deildegast</b>.<br>" +
+                      "• Efekt znika po każdym polowaniu, więc <b>powtarzaj testy</b> między atakami.<br>" +
+                      "• Jeśli duch <b>przyspiesza z LOS</b>, <b>nie jest to Deildegast</b>.<br>" +
+                      "• Łatwo go pomylić z <b>Thaye</b> (wspólne DOTS i Ghost Writing) – Thaye zaczyna polować przy 75% sanity i z wiekiem zwalnia.<br>"
+            },
+            {
+                name: "Kormos",
+                evidence: ["Ghost Orbs", "Spirit Box", "Ultraviolet"],
+                sanity: "50% / 70%",
+                speed: "1.7 - 2.21 m/s",
+                pro: "• Jest <b>prawie ślepy</b> – widzi gracza tylko z bliska (ok. 5m, bez przeszkód), ale ma <b>niezwykle wyostrzony słuch</b>.<br>" +
+                     "• Jako <b>jedyny duch słyszy kroki</b> podczas polowania (co sekundę wykonuje „impuls słuchu”). Sprint jest dla niego najgłośniejszy – może go usłyszeć nawet z <b>30m</b>.<br>" +
+                     "• Próg ataku: <b>50% sanity</b>, <b>70%</b> gdy gracz biegnie w jego pokoju.<br>" +
+                     "• Prędkość: <b>1.7 m/s</b>, a gdy idzie za wykrytym dźwiękiem z daleka – <b>×1.3</b> (ok. <b>2.21 m/s</b>).<br>" +
+                     "• Nie wykonuje eventu, w którym pojawia się i idzie w stronę gracza.<br>" +
+                     "• Kadzidło oślepia go na <b>5 sekund</b> i w tym czasie nie słyszy ani nie zabija dotykiem.",
+                desc: "• Podczas polowania <b>stań w miejscu i nie wydawaj dźwięków</b>. Jeśli duch przechodzi obok bez reakcji, jest to <b>Kormos</b> (wykonuj test przy otwartej przestrzeni i drodze ucieczki).<br>" +
+                      "• Jeśli duch <b>reaguje na kroki</b>, a nie na sam widok gracza, i szybko namierza biegnącego, to prawdopodobnie <b>Kormos</b>.<br>" +
+                      "• <b>Sprint w pokoju ducha</b> poza polowaniem podnosi jego próg do <b>70%</b> – to dobra pułapka testowa.<br>" +
+                      "• Jeśli <b>nigdy</b> nie wykonuje eventu z podejściem do gracza, wzmacnia to podejrzenie na <b>Kormos</b>.<br>" +
+                      "• Pełne dowody Kormos są takie same jak u <b>The Mimic</b> – zrób test zachowania, aby go wykluczyć.<br>"
+            },
+        ].sort((a,b) => a.name.localeCompare(b.name));
+
+        /* Builds "• line<br>• line<br>" from a list of lines. */
+        const bullets = (...lines) => lines.join("<br>") + "<br>";
+
+        /* Zero-evidence guides for ghosts that have no "desc" of their own. */
+        const zeroEvidenceGuides = {
+            "Dayan": bullets(
+                "• Może być tylko <b>kobietą</b> (imię i model).",
+                "• W promieniu 10 m: gdy <b>idziesz</b>, przyspiesza (<b>2.25 m/s</b>, próg 65%); gdy <b>stoisz nieruchomo</b>, zwalnia (<b>1.2 m/s</b>, próg 45%). Zatrzymuj się i ruszaj na zmianę, aby to sprawdzić.",
+                "• Powyżej 10 m ma standardowe <b>1.7 m/s</b>.",
+            ),
+
+            "Demon": bullets(
+                "• Może polować <b>60 s po kadzidle</b> zamiast 90 s.",
+                "• Przerwa między polowaniami to tylko <b>20 s</b> zamiast 25 s.",
+                "• Zasięg Krzyża jest większy o 50% na każdy Tier (<b>4.5 / 6 / 7.5 m</b>).",
+                "• Poluje też przy wysokim sanity – częste, wczesne polowania to dobra wskazówka.",
+            ),
+
+            "Deogen": bullets(
+                "• Zawsze zna Twoją pozycję w polowaniu (LOS) – <b>nie da się przed nim ukryć</b>.",
+                "• Daleko od gracza jest bardzo szybki (<b>3.0 m/s</b>), ale blisko zwalnia do <b>0.4 m/s</b>, co pozwala go loopować.",
+                "• 33% szans na unikalny <b>ciężki oddech</b> przez Spirit Box w zasięgu 1 m. " + mics("deogen", ["../sound/deogen.mp3"]),
+            ),
+
+            "Gallu": bullets(
+                "• Cyklicznie zmienia stan: <b>Normalny</b> (1.7 m/s, 50%), <b>Wściekły</b> (1.96 m/s, 60%) i <b>Osłabiony</b> (1.36 m/s, 40%).",
+                "• Wściekły Gallu podczas polowania <b>przechodzi przez sól i nie zostawia śladu stóp</b>.",
+                "• Mierz prędkość w kilku polowaniach – zmienia się między nimi.",
+            ),
+
+            "Goryo": bullets(
+                "• <b>Nigdy nie zmienia</b> ulubionego pokoju.",
+                "• Przy małej liczbie dowodów (Nightmare/Insanity) ma gwarantowany <b>DOTS</b>.",
+                "• DOTS widać tylko przez kamerę wideo i tylko wtedy, gdy w pokoju nie ma gracza.",
+                "• Rzadko oddala się od swojego pokoju.",
+            ),
+
+            "Hantu": bullets(
+                "• Podczas polowania widać jego <b>mroźny oddech</b>, jeśli bezpiecznik jest wyłączony lub zepsuty.",
+                "• <b>Nigdy nie włącza</b> bezpiecznika, a często go wyłącza.",
+                "• W zimnych pomieszczeniach jest szybszy (do <b>2.7 m/s</b>), w ciepłych wolniejszy (<b>1.4 m/s</b>).",
+                "• Nie przyspiesza z line of sight.",
+            ),
+
+            "Jinn": bullets(
+                "• Przy włączonym prądzie przyspiesza do <b>2.5 m/s</b>, gdy widzi gracza z ponad 3 m. Wyłącz bezpiecznik – jeśli prędkość spada do 1.7 m/s, to <b>Jinn</b>.",
+                "• <b>Nigdy nie wyłącza</b> bezpiecznika.",
+                "• Umiejętność: obniża sanity gracza o <b>25%</b> w promieniu 3 m, zostawiając EMF przy bezpieczniku.",
+            ),
+
+            "Mare": bullets(
+                "• Podczas eventu <b>zapal światło</b> w promieniu 4 m. Jeśli natychmiast zgaśnie, jest to <b>Mare</b>.",
+                "• Częściej gasi światła i rozbija żarówki.",
+                "• Próg ataku: <b>60%</b> (ciemny pokój) / <b>40%</b> (jasny pokój).",
+            ),
+
+            "Moroi": bullets(
+                "• Im niższe średnie sanity, tym <b>szybszy</b> w polowaniu (od 1.5 m/s w górę, max ok. 3.71 m/s).",
+                "• <b>Klątwa:</b> po usłyszeniu go przez Spirit Box, mikrofon paraboliczny lub rejestrator sanity spada <b>2× szybciej</b>, nawet w świetle.",
+                "• Kadzidło oślepia go na <b>7 s</b> zamiast 5 s.",
+            ),
+
+            "Myling": bullets(
+                "• <b>Często wydaje dźwięki</b> przez mikrofon paraboliczny (zwykle w odstępach do 80 s).",
+                "• Podczas polowania kroków i głosu <b>nie słychać</b> między 12 a 20 m.",
+                "• Słyszysz latarkę lub elektronikę, ale nie kroki – to prawdopodobnie <b>Myling</b>.",
+            ),
+
+            "Obake": bullets(
+                "• Podczas polowania na ułamek sekundy <b>zmienia model</b> ducha (mrugnięcie).",
+                "• 25% szans, że krok w soli „zgubi” dźwięk (krok… krok… pauza… krok).",
+                "• Może zostawić odcisk dłoni z <b>6 palcami</b>, a odciski znikają 2× szybciej.",
+            ),
+
+            "Obambo": bullets(
+                "• Co <b>2 minuty</b> przełącza się między stanem Spokojnym a Agresywnym, nawet w trakcie polowania.",
+                "• Agresywny: <b>65%</b>, <b>1.96 m/s</b>. Spokojny: <b>10%</b>, <b>1.45 m/s</b>.",
+                "• Mierz prędkość w polowaniu – zmiana prędkości w trakcie jednego polowania to mocna wskazówka.",
+            ),
+
+            "Oni": bullets(
+                "• Podczas eventów zabiera <b>20% sanity</b> zamiast 10%.",
+                "• <b>Nigdy</b> nie wykonuje eventu Ghost Mist.",
+                "• W polowaniu jest bardziej widoczny (szybciej mruga).",
+                "• Jest aktywniejszy, gdy w pobliżu jest wielu graczy.",
+            ),
+
+            "Onryo": bullets(
+                "• Po zdmuchnięciu <b>3 płomieni</b> (świece, firelighty) próbuje polować przy <b>dowolnym sanity</b>.",
+                "• Jako jedyny może zgasić to samo źródło ognia <b>dwa razy w ciągu 20 s</b>.",
+                "• Płomienie działają jak krzyże (zasięg 4 m), więc zapalone świece mogą powstrzymać jego polowanie.",
+            ),
+
+            "Phantom": bullets(
+                "• <b>Zdjęcie lub nagranie</b> ducha (także w stanie DOTS) sprawia, że znika.",
+                "• W polowaniu jest słabiej widoczny (rzadsze mruganie).",
+                "• Tracisz <b>0.5% sanity na sekundę</b> w zasięgu bicia serca podczas polowań i eventów.",
+            ),
+
+            "Poltergeist": bullets(
+                "• Podczas polowania rzuca przedmiotami co <b>0.5 s</b>.",
+                "• Rzuca szybciej i dalej niż inne duchy.",
+                "• Ułóż kilka przedmiotów w jednym miejscu – jeśli polecą naraz, to <b>Poltergeist Explosion</b> (-2% sanity za przedmiot).",
+            ),
+
+            "Raiju": bullets(
+                "• Elektronika (np. latarki) zakłóca się w promieniu <b>15 m</b> zamiast 10 m.",
+                "• W polowaniu przyspiesza do <b>2.5 m/s</b>, gdy w pobliżu jest aktywny sprzęt – wyłącz go i sprawdź, czy prędkość spada do 1.7 m/s.",
+                "• Ma głośniejsze bicie serca niż inne duchy.",
+            ),
+
+            "Revenant": bullets(
+                "• Podczas polowania idzie <b>1.0 m/s</b>, dopóki nie wykryje gracza (głos, elektronika lub LOS).",
+                "• Po wykryciu pędzi <b>3.0 m/s</b> do ostatniej znanej pozycji, a gdy nikogo nie znajdzie, wraca do 1.0 m/s.",
+                "• Test: schowaj się i wyłącz sprzęt – prędkość spada.",
+            ),
+
+            "Shade": bullets(
+                "• <b>Nie zacznie polowania</b>, gdy jesteś w tym samym pokoju co duch.",
+                "• Nie wykonuje interakcji z EMF 2, 3 i 4 w pokoju z graczem.",
+                "• Preferuje <b>model cienia</b> w eventach, a przy Summoning Circle, Music Box i Monkey Paw używa wyłącznie cienia.",
+                "• Nigdy nie robi eventu ze <b>śpiewem</b>. Próg ataku: <b>35%</b>.",
+            ),
+
+            "Spirit": bullets(
+                "• Kadzidło użyte w pokoju ducha blokuje polowanie na <b>180 s</b> zamiast standardowych 90 s.",
+                "• Użyj kadzidła i odmierz czas do kolejnego polowania – to jedyny wiarygodny test na 0 dowodów.",
+                "• Nie ma żadnych innych unikalnych cech.",
+            ),
+
+            "Thaye": bullets(
+                "• Wiek na <b>Tablicy Ouija</b> rośnie wraz ze starzeniem się ducha (może osiągnąć <b>90+ lat</b>).",
+                "• Młodszy jest aktywniejszy i szybszy (do <b>2.75 m/s</b>, próg 75%), starszy wolniejszy (<b>1.0 m/s</b>, próg 15%).",
+                "• Spędź czas w pokoju ducha i ponownie zapytaj o wiek.",
+            ),
+
+            "The Mimic": bullets(
+                "• Zawsze pokazuje <b>Ghost Orbs</b> jako dodatkowy dowód, nawet bez dowodów.",
+                "• Co <b>30-120 s</b> naśladuje innego ducha i kopiuje jego zachowanie, próg ataku i prędkość.",
+                "• Zachowanie zmienia się między polowaniami (np. inne prędkości i progi).",
+            ),
+
+            "The Twins": bullets(
+                "• Potrafią wykonać <b>2 interakcje naraz</b> w różnych miejscach.",
+                "• Prędkość w polowaniu to <b>1.5 m/s</b> lub <b>1.9 m/s</b>, zależnie od tego, z którego bliźniaka zaczyna się polowanie.",
+                "• Czujniki ruchu i sól reagują tylko na głównego ducha.",
+            ),
+
+            "Wraith": bullets(
+                "• <b>Nigdy nie nadepnie na sól</b>, a sól Tier 3 go nie spowalnia.",
+                "• Potrafi się <b>teleportować do losowego gracza</b> i zostawić EMF 2 (lub 5) na wysokości stóp.",
+                "• Po teleportacji może rozpocząć polowanie z dowolnego miejsca.",
+            ),
+
+            "Yokai": bullets(
+                "• W polowaniu słyszy dźwięki i elektronikę <b>tylko do 2.5 m</b> (mniej niż inne duchy).",
+                "• Gdy gracze <b>rozmawiają w jego pokoju</b>, polowanie zaczyna się już przy <b>80% sanity</b>.",
+                "• Staje się aktywniejszy, gdy rozmawiasz w jego pobliżu.",
+            ),
+
+            "Yurei": bullets(
+                "• Jedyny duch, który może <b>zamknąć drzwi wyjściowe</b> poza polowaniem lub eventem.",
+                "• Poza polowaniem zawsze <b>w pełni</b> otwiera lub zamyka drzwi (nie uchyla ich).",
+                "• Kadzidło więzi go w pokoju na <b>90 s</b>.",
+                "• Może zatrzasnąć drzwi, obniżając sanity pobliskich graczy o <b>15%</b>.",
+            ),
+        };
+
+        ghosts.forEach(ghost => {
+            if (!ghost.desc && zeroEvidenceGuides[ghost.name]) {
+                ghost.desc = zeroEvidenceGuides[ghost.name];
+            }
+        });
+
+
+        /* ==========================================================================
+           2. HELPERS
+           ========================================================================== */
+
+        const $  = id => document.getElementById(id);
+        const $$ = selector => [...document.querySelectorAll(selector)];
+
+        /* True while the user is typing, so shortcuts don't hijack the keys. */
+        const isTyping = () => /INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName);
+
+        /* "1.4 - 2.75 m/s" -> [1.4, 2.75] */
+        const extractNumbers = text => (String(text).match(/\d+(?:\.\d+)?/g) || []).map(Number);
+
+        /* 75 -> "01:15" */
+        const formatClock = seconds =>
+            String(Math.floor(seconds / 60)).padStart(2, "0") + ":" +
+            String(Math.floor(seconds % 60)).padStart(2, "0");
+
+        /* localStorage can be blocked, so every access is wrapped. */
+        function readStorage(key, fallback = "") {
+            try { return localStorage.getItem(key) ?? fallback; }
+            catch (error) { return fallback; }
+        }
+
+        function writeStorage(key, value) {
+            try { localStorage.setItem(key, value); }
+            catch (error) { /* storage unavailable - ignore */ }
+        }
+
+        function loadSet(key) {
+            try { return new Set(JSON.parse(readStorage(key, "[]"))); }
+            catch (error) { return new Set(); }
+        }
+
+        /* The seven evidence types. "key" is what the filter buttons use,
+           "pattern" recognises the evidence names written in the ghost data. */
+        const EVIDENCE = [
+            { key: "EMF",         pattern: "emf",    badge: "badge-emf",      icon: "⚡",  label: "⚡ EMF 5" },
+            { key: "Box",         pattern: "box",    badge: "badge-box",      icon: "📻", label: "📻 Spirit Box" },
+            { key: "Ultraviolet", pattern: "ultra",  badge: "badge-uv",       icon: "🔮", label: "🔮 Ultraviolet" },
+            { key: "DOTS",        pattern: "dots",   badge: "badge-dots",     icon: "✨", label: "✨ DOTS" },
+            { key: "Writing",     pattern: "writ",   badge: "badge-writing",  icon: "📖", label: "📖 Ghost Writing" },
+            { key: "Orbs",        pattern: "orb",    badge: "badge-orbs",     icon: "🟡", label: "🟡 Ghost Orbs" },
+            { key: "Freezing",    pattern: "freez",  badge: "badge-freezing", icon: "❄️", label: "❄️ Freezing" }
+        ];
+
+        const findEvidence = name => EVIDENCE.find(type => name.toLowerCase().includes(type.pattern));
+        const hasEvidence  = (ghost, key) => ghost.evidence.some(name => name.toLowerCase().includes(key.toLowerCase()));
+
+
+        /* ==========================================================================
+           3. APP STATE
+           ========================================================================== */
+
+        const state = {
+            included: [],                    // evidence found (✔)
+            excluded: [],                    // evidence ruled out (✖)
+            favorites: loadSet("gl-fav"),    // starred ghosts
+            ruledOut: loadSet("gl-out"),     // ghosts crossed off
+            visibleNames: []                 // ghosts currently on screen (for the copy button)
+        };
+
+        function saveMarks() {
+            writeStorage("gl-fav", JSON.stringify([...state.favorites]));
+            writeStorage("gl-out", JSON.stringify([...state.ruledOut]));
+        }
+
+
+        /* ==========================================================================
+           4. GHOST CARDS
+           ========================================================================== */
+
+        /* Colours each number of the hunt threshold: green = safe, red = dangerous. */
+        function formatSanity(text) {
+            return text.replace(/(\d+)(%?)/g, (match, digits) => {
+                const value = parseInt(digits, 10);
+                let color = "var(--hunt-danger)";
+                if (value <= 40)      color = "var(--hunt-safe)";
+                else if (value <= 55) color = "var(--hunt-warn)";
+                return `<span style="color:${color};text-shadow:0 0 10px ${color}">${match}</span>`;
+            });
+        }
+
+        function buildBadges(ghost) {
+            return ghost.evidence.map(name => {
+                const type = findEvidence(name);
+                return `<span class="badge ${type ? type.badge : ""}">${type ? type.icon : "👁"} ${name}</span>`;
+            }).join("");
+        }
+
+        /* Thin line under the card header, blended from the ghost's evidence colours. */
+        function buildAccent(ghost) {
+            const colors = ghost.evidence
+                .map(findEvidence)
+                .filter(Boolean)
+                .map(type => `var(--color-${type.badge.replace("badge-", "")})`);
+            return colors.join(",") || "var(--neon-blue),var(--violet)";
+        }
+
+        const NO_GUIDE_HTML = `
+            <div class="no-desc">
+                <em>👁️‍🗨️</em>Brak strategii 0-evidence.
+                <small>Dodaj pole <b>desc</b> w danych tego ducha.</small>
+            </div>`;
+
+        function createCard(ghost, position) {
+            const card = document.createElement("div");
+            card.className = "card-container";
+            card.classList.toggle("fav", state.favorites.has(ghost.name));
+            card.classList.toggle("out", state.ruledOut.has(ghost.name));
+            card.tabIndex = 0;
+            card.style.setProperty("--i", position);
+
+            const id = String(ghosts.indexOf(ghost) + 1).padStart(3, "0");
+            const guide = ghost.desc || ghost.zeroEv;
+
+            card.innerHTML = `
+                <div class="card-inner">
+                    <div class="card-front">
+                        <div class="card-top">
+                            <span>ID//${id}</span>
+                            <span class="tools">
+                                <button class="tool star" data-name="${ghost.name}" title="Ulubiony">★</button>
+                                <button class="tool rule" data-name="${ghost.name}" title="Odrzuć ducha">✖</button>
+                            </span>
+                        </div>
+                        <div class="accent" style="background:linear-gradient(90deg,${buildAccent(ghost)})"></div>
+                        <h3>${ghost.name}</h3>
+                        <div class="badges">${buildBadges(ghost)}</div>
+                        <div class="stats">
+                            <div class="stat"><label>Hunt Threshold</label><b>${formatSanity(ghost.sanity)}</b></div>
+                            <div class="stat"><label>Base Speed</label><b>${ghost.speed}</b></div>
+                        </div>
+                        <div class="pro-tips"><b>NOTATKI ŚLEDCZE:</b><br>${ghost.pro}</div>
+                        <div class="hint">KLIKNIJ → 0-EVIDENCE ⟲</div>
+                    </div>
+                    <div class="card-back">
+                        <div class="sigil"><span>🕯️</span></div>
+                        <div class="zero-ev-title">0-EVIDENCE PROTOCOL</div>
+                        <div class="back-name">${ghost.name}</div>
+                        <div class="zero-ev-content">${guide || NO_GUIDE_HTML}</div>
+                        <div class="hint">KLIKNIJ, ABY WRÓCIĆ ⟲</div>
+                    </div>
+                </div>`;
+            return card;
+        }
+
+        /* 🎙 sound buttons: one sound at a time, click again to stop. */
+        let micAudio = null;
+        let micButton = null;
+
+        function stopMic() {
+            if (micAudio) { micAudio.pause(); micAudio = null; }
+            if (micButton) { micButton.classList.remove("playing"); micButton = null; }
+        }
+
+        function toggleMicSound(button) {
+            const sameButton = micButton === button;
+            stopMic();
+            if (sameButton) return;                           // second click on the same mic = stop
+
+            const src = button.dataset.src;
+            if (!src) {                                       // no sound linked yet
+                button.classList.add("no-sound");
+                setTimeout(() => button.classList.remove("no-sound"), 450);
+                return;
+            }
+
+            micAudio = new Audio(src);
+            micButton = button;
+            button.classList.add("playing");
+            micAudio.addEventListener("ended", () => { if (micButton === button) stopMic(); });
+            micAudio.addEventListener("error", () => { if (micButton === button) stopMic(); });
+            micAudio.play().catch(() => { if (micButton === button) stopMic(); });
+        }
+
+        function render() {
+            stopMic();                                        // cards are rebuilt, so stop any sound
+            const grid = $("ghost-grid");
+            const list = sortGhosts(filterGhosts());
+
+            grid.innerHTML = "";
+            list.forEach((ghost, position) => grid.appendChild(createCard(ghost, position)));
+
+            updateSummary(list);
+        }
+
+        /* Counter + advisor. Ghosts you crossed off (✖) stay on screen greyed out,
+           but they no longer count as suspects. */
+        function updateSummary(list = filterGhosts()) {
+            const suspects = list.filter(ghost => !state.ruledOut.has(ghost.name));
+            $("count").innerText = `${suspects.length} / ${ghosts.length} DUCHÓW`;
+            $("empty").style.display = list.length ? "none" : "block";
+            updateAdvisor(suspects);
+        }
+
+        /* Flips every card on screen. If they are all showing their back already, turns them face-up again. */
+        function flipAllCards() {
+            const cards = $$(".card-container");
+            const allFlipped = cards.every(card => card.classList.contains("flipped"));
+            cards.forEach(card => card.classList.toggle("flipped", !allFlipped));
+        }
+
+        /* Card interaction is handled once on the grid instead of on every card. */
+        function bindGrid() {
+            const grid = $("ghost-grid");
+
+            grid.addEventListener("click", event => {
+                const mic = event.target.closest(".mic-btn");
+                if (mic) {                                    // 🎙 play / stop the sound, don't flip the card
+                    toggleMicSound(mic);
+                    return;
+                }
+
+                const tool = event.target.closest(".tool");
+
+                if (tool) {                                   // ★ favorite / ✖ rule out
+                    const isStar = tool.classList.contains("star");
+                    const marks = isStar ? state.favorites : state.ruledOut;
+                    const name = tool.dataset.name;
+                    marks.has(name) ? marks.delete(name) : marks.add(name);
+                    saveMarks();
+                    tool.closest(".card-container").classList.toggle(isStar ? "fav" : "out", marks.has(name));
+            if (!isStar) updateSummary();                 // crossing a ghost off changes the count
+                    return;
+                }
+
+                const card = event.target.closest(".card-container");
+                if (card) card.classList.toggle("flipped");   // flip the card
+            });
+
+            grid.addEventListener("keydown", event => {
+                const isCard = event.target.classList.contains("card-container");
+                if (isCard && (event.key === "Enter" || event.key === " ")) {
+                    event.preventDefault();
+                    event.target.classList.toggle("flipped");
+                }
+            });
+
+            /* Glow + gentle 3D tilt that follow the cursor. */
+            grid.addEventListener("mousemove", event => {
+                const card = event.target.closest(".card-container");
+                if (!card) return;
+                const box = card.getBoundingClientRect();
+                const x = event.clientX - box.left;
+                const y = event.clientY - box.top;
+                card.style.setProperty("--gx", x + "px");
+                card.style.setProperty("--gy", y + "px");
+                card.style.setProperty("--ry", (x / box.width - 0.5) * 8 + "deg");
+                card.style.setProperty("--rx", (0.5 - y / box.height) * 8 + "deg");
+            });
+
+            grid.addEventListener("mouseout", event => {
+                const card = event.target.closest(".card-container");
+                if (card && !card.contains(event.relatedTarget)) {
+                    card.style.setProperty("--rx", "0deg");
+                    card.style.setProperty("--ry", "0deg");
+                }
+            });
+
+            /* Mouse-wheel scrolling for the card notes (front) and the 0-evidence text (back).
+               Done in code because the tilted 3D cards can stop the browser's own wheel scrolling. */
+            grid.addEventListener("wheel", event => {
+                const box = event.target.closest(".pro-tips, .zero-ev-content");
+                if (!box || box.scrollHeight <= box.clientHeight) return;       // nothing to scroll: the page scrolls as usual
+
+                const delta = event.deltaMode === 1 ? event.deltaY * 16 :        // lines -> pixels
+                              event.deltaMode === 2 ? event.deltaY * box.clientHeight : event.deltaY;
+                const atTop = box.scrollTop <= 0 && delta < 0;
+                const atBottom = box.scrollTop + box.clientHeight >= box.scrollHeight - 1 && delta > 0;
+                if (atTop || atBottom) return;                                   // end reached: let the page scroll on
+
+                box.scrollTop += delta;
+                event.preventDefault();
+            }, { passive: false });
+        }
+
+
+        /* ==========================================================================
+           5. EVIDENCE FILTERS, SEARCH & SORTING
+           ========================================================================== */
+
+        function filterGhosts() {
+            const query = $("search").value.toLowerCase();
+            return ghosts.filter(ghost =>
+                ghost.name.toLowerCase().includes(query) &&
+                state.included.every(key => hasEvidence(ghost, key)) &&
+                !state.excluded.some(key => hasEvidence(ghost, key))
+            );
+        }
+
+        /* Favorites first, then the chosen order, then A-Z. */
+        function sortGhosts(list) {
+            const mode = $("sort").value;
+            const sortKey = ghost =>
+                mode === "speed" ?  Math.min(...extractNumbers(ghost.speed)) :
+                mode === "hunt"  ? -Math.max(...extractNumbers(ghost.sanity)) : 0;
+
+            return list.sort((a, b) =>
+                (state.favorites.has(b.name) - state.favorites.has(a.name)) ||
+                (sortKey(a) - sortKey(b)) ||
+                a.name.localeCompare(b.name)
+            );
+        }
+
+        /* One button, three states: nothing -> found (✔) -> ruled out (✖) -> nothing. */
+        function cycleEvidence(button) {
+            const key = button.dataset.evidence;
+
+            if (state.included.includes(key)) {
+                state.included = state.included.filter(item => item !== key);
+                state.excluded.push(key);
+                button.classList.replace("active", "excluded");
+            } else if (state.excluded.includes(key)) {
+                state.excluded = state.excluded.filter(item => item !== key);
+                button.classList.remove("excluded");
+            } else {
+                state.included.push(key);
+                button.classList.add("active");
+            }
+            render();
+        }
+
+        /* New round: clears evidence, crossed-off ghosts and the search box (favorites stay). */
+        function resetFilters() {
+            state.included = [];
+            state.excluded = [];
+            state.ruledOut.clear();
+            saveMarks();
+            $$(".ev-btn").forEach(button => button.classList.remove("active", "excluded"));
+            $("search").value = "";
+            render();
+        }
+
+
+        /* ==========================================================================
+           6. EVIDENCE ADVISOR - what should we test next?
+           ========================================================================== */
+
+        function updateAdvisor(list) {
+            const count = list.length;
+            state.visibleNames = list.map(ghost => ghost.name);
+            let html = "";
+
+            if (count === 1) {
+                html = `<b class="adv-ok">✔ WYNIK: ${list[0].name}</b>`;
+            } else if (count === 0) {
+                html = `<b class="adv-bad">✖ Brak pasujących duchów – sprawdź wykluczone dowody lub odrzucone duchy.</b>`;
+            } else if (!state.included.length && !state.excluded.length) {
+                html = "Zaznacz znalezione dowody – podpowiem, co sprawdzać dalej.";
+            } else {
+                /* Best next test = the evidence that splits the remaining ghosts closest to half. */
+                const suggestions = EVIDENCE
+                    .filter(type => !state.included.includes(type.key) && !state.excluded.includes(type.key))
+                    .map(type => ({ type, matches: list.filter(ghost => hasEvidence(ghost, type.key)).length }))
+                    .filter(item => item.matches > 0 && item.matches < count)
+                    .sort((a, b) => Math.abs(a.matches - count / 2) - Math.abs(b.matches - count / 2))
+                    .slice(0, 3);
+
+                html = `Pozostało <b>${count}</b> / ${ghosts.length} duchów.`;
+                if (suggestions.length) {
+                    html += " Sprawdź następnie: " + suggestions.map(({ type, matches }) =>
+                        `<button class="adv-chip" data-key="${type.key}" title="Kliknij, jeśli to znalazłeś">` +
+                        `${type.label} <small>${matches}/${count}</small></button>`
+                    ).join("");
+                }
+            }
+
+            if (count > 0) html += `<button class="adv-chip adv-copy" data-copy="1">📋 KOPIUJ LISTĘ</button>`;
+            $("advisor").innerHTML = html;
+        }
+
+        function bindAdvisor() {
+            $("advisor").addEventListener("click", event => {
+                const chip = event.target.closest(".adv-chip");
+                if (!chip) return;
+
+                if (chip.dataset.copy) {                       // copy the remaining ghosts
+                    const text = `Pozostałe duchy (${state.visibleNames.length}): ${state.visibleNames.join(", ")}`;
+                    try {
+                        navigator.clipboard.writeText(text).then(() => { chip.textContent = "✔ SKOPIOWANO"; });
+                    } catch (error) { /* clipboard unavailable */ }
+                    return;
+                }
+
+                const button = $$(".ev-btn").find(item => item.dataset.evidence === chip.dataset.key);
+                if (button) cycleEvidence(button);             // mark the suggestion as found
+            });
+        }
+
+
+        /* ==========================================================================
+           7. SMUDGE TIMER
+           ========================================================================== */
+
+        const SMUDGE_NAMES = { 60: "DEMON", 90: "NORMAL", 180: "SPIRIT" };
+        let smudgeInterval;
+
+        /* progress: 1 = full ring, 0 = empty. Red while burning. */
+        function setRing(progress, burning) {
+            const ring = $("ring");
+            ring.style.setProperty("--p", progress * 360 + "deg");
+            ring.classList.toggle("run", burning);
+        }
+
+        function startSmudge(seconds) {
+            const clock = $("t-val");
+            const label = $("t-sub");
+            const sound = $("timer-audio");
+            let remaining = seconds;
+
+            clearInterval(smudgeInterval);
+            sound.pause();
+            sound.currentTime = 0;
+
+            clock.style.color = "var(--hunt-danger)";
+            clock.innerText = remaining + "s";
+            label.innerText = `${SMUDGE_NAMES[seconds] || "SMUDGE"} · BURNING`;
+            setRing(1, true);
+
+            smudgeInterval = setInterval(() => {
+                remaining--;
+                clock.innerText = remaining + "s";
+                setRing(remaining / seconds, true);
+                if (remaining > 0) return;
+
+                /* Time is up: reset the display and play the sound for ~4.5 s. */
+                clearInterval(smudgeInterval);
+                clock.innerText = "READY";
+                clock.style.color = "var(--neon-blue)";
+                label.innerText = "SMUDGE READY";
+                setRing(1, false);
+                sound.play().catch(() => {});
+                setTimeout(() => { sound.pause(); sound.currentTime = 0; }, 4500);
+            }, 1000);
+        }
+
+
+        /* ==========================================================================
+           8. SPEED DETECTOR
+           Taps -> BPM -> m/s, plus a list of ghosts that match that speed.
+           ========================================================================== */
+
+        const METER_BARS = 24;
+        const METER_MAX_SPEED = 4;   // m/s shown by a full meter
+
+        /* Which ghosts could be moving at a given speed. Each profile is [name, note]. */
+        const SPEED_PROFILES = [
+            {
+                matches: speed => speed >= 1.6 && speed <= 1.8,
+                ghosts: [
+                    ["Większość duchów", "Standard 1.7 m/s"],
+                    ["Thaye", "Średni wiek"]
+                ]
+            },
+            {
+                matches: speed => speed > 1.8 && speed <= 2.1,
+                ghosts: [
+                    ["The Twins", "Fałszywy klon - 1.9 m/s"],
+                    ["Moroi", "Średnio-niskie Sanity"],
+                    ["Obambo / Gallu", "Stan Agresywny - 1.96 m/s"]
+                ]
+            },
+            {
+                matches: speed => speed > 2.1 && speed <= 2.6,
+                ghosts: [
+                    ["Jinn", "Gracz widoczny z daleka - 2.5 m/s"],
+                    ["Raiju", "Blisko elektroniki - 2.5 m/s"],
+                    ["Hantu", "W zimnym pomieszczeniu"],
+                    ["Moroi", "Bardzo niskie Sanity"],
+                    ["Dayan", "Gracz idzie blisko - 2.25 m/s"],
+                    ["Kormos", "Idzie za dźwiękiem - 2.21 m/s"],
+                    ["Aswang", "Z LOS - do 2.53 m/s"]
+                ]
+            },
+            {
+                matches: speed => speed > 2.6,
+                ghosts: [
+                    ["Revenant", "Widzi gracza - 3.0 m/s"],
+                    ["Deogen", "Daleko od gracza - 3.0 m/s"],
+                    ["Deildegast", "Bez ruszania przedmiotów - 3.0 m/s"],
+                    ["Thaye", "Najmłodszy - 2.75 m/s"],
+                    ["Moroi", "0% Sanity - 3.7 m/s"]
+                ]
+            },
+            {
+                matches: speed => speed >= 1.4 && speed < 1.6,
+                ghosts: [
+                    ["The Twins", "Prawdziwy - 1.5 m/s"],
+                    ["Obambo", "Stan Spokojny - 1.45 m/s"],
+                    ["Hantu", "Średnia temperatura"],
+                    ["Aswang", "Bez LOS - 1.53 m/s"]
+                ]
+            },
+            {
+                matches: speed => speed < 1.4,
+                ghosts: [
+                    ["Deogen", "Blisko gracza - 0.4 m/s"],
+                    ["Revenant", "Nie widzi gracza - 1.0 m/s"],
+                    ["Thaye", "Najstarszy - 1.0 m/s"],
+                    ["Dayan", "Gracz stoi nieruchomo - 1.2 m/s"],
+                    ["Gallu", "Osłabiony - 1.36 m/s"],
+                    ["Deildegast", "Po przeniesieniu wielu przedmiotów - do 0.4 m/s"]
+                ]
+            }
+        ];
+
+        const SPEED_PLACEHOLDER = "Oczekuję na dane uderzeń... Wstukaj tempo kroków ducha, aby wyliczyć m/s.";
+
+        function buildMeter() {
+            const meter = $("meter");
+            for (let i = 0; i < METER_BARS; i++) {
+                const bar = document.createElement("i");
+                bar.style.height = 30 + (70 * i) / (METER_BARS - 1) + "%";   // bars grow left to right
+                meter.appendChild(bar);
+            }
+        }
+
+        function setMeter(speed) {
+            const meter = $("meter");
+            const lit = Math.min(METER_BARS, Math.round((speed / METER_MAX_SPEED) * METER_BARS));
+            [...meter.children].forEach((bar, i) => bar.classList.toggle("on", i < lit));
+            meter.dataset.z = speed > 2.6 ? "hi" : speed > 1.8 ? "mid" : "lo";   // colour zone
+        }
+
+        function calculateSpeed() {
+            const bpm = parseFloat($("bpm-input").value);
+            const output = $("speed-val-out");
+            const box = $("ghost-suggestions");
+
+            if (isNaN(bpm) || bpm <= 0) {
+                output.innerText = "0.00";
+                setMeter(0);
+                box.innerHTML = SPEED_PLACEHOLDER;
+                return;
+            }
+
+            const speed = (bpm * 0.85) / 60;          // BPM -> m/s (standard conversion)
+            output.innerText = speed.toFixed(2);
+            setMeter(speed);
+
+            const profile = SPEED_PROFILES.find(item => item.matches(speed));
+            const items = profile ? profile.ghosts.map(([name, note]) => `<li><b>${name}</b> (${note})</li>`).join("") : "";
+            box.innerHTML = `<b>Zidentyfikowane profile:</b><ul>${items}</ul>`;
+        }
+
+        /* Tap tempo: average of the last 5 taps, reset after 2 s of silence. */
+        let tapTimes = [];
+        let tapTimeout;
+
+        function flashTapButton() {
+            const button = $("tap-btn");
+            button.classList.remove("hit");
+            void button.offsetWidth;                  // restart the CSS animation
+            button.classList.add("hit");
+        }
+
+        function tapBeat() {
+            flashTapButton();
+            tapTimes.push(Date.now());
+            if (tapTimes.length > 5) tapTimes.shift();
+
+            if (tapTimes.length >= 2) {
+                const gaps = tapTimes.length - 1;
+                const average = (tapTimes[tapTimes.length - 1] - tapTimes[0]) / gaps;
+                $("bpm-input").value = Math.round(60000 / average);
+                calculateSpeed();
+            }
+
+            clearTimeout(tapTimeout);
+            tapTimeout = setTimeout(() => { tapTimes = []; }, 2000);
+        }
+
+
+        /* ==========================================================================
+           9. HUNT TRACKER
+           Times each hunt, then counts down the cooldown (25 s, or 20 s for a Demon).
+           ========================================================================== */
+
+        const hunt = {
+            active: false,
+            startedAt: 0,
+            count: 0,
+            longest: 0,
+            lastEndedAt: 0,
+            cooldownEnd: 0,
+            cooldownTotal: 25,
+            log: []
+        };
+
+        function toggleHunt() {
+            const now = Date.now();
+
+            if (!hunt.active) {                                   // hunt starts
+                hunt.active = true;
+                hunt.startedAt = now;
+                hunt.cooldownEnd = 0;
+            } else {                                              // hunt ends
+                const duration = (now - hunt.startedAt) / 1000;
+                const time = new Date().toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" });
+
+                hunt.active = false;
+                hunt.count++;
+                hunt.longest = Math.max(hunt.longest, duration);
+                hunt.lastEndedAt = now;
+                hunt.cooldownTotal = $("demon-chk").checked ? 20 : 25;
+                hunt.cooldownEnd = now + hunt.cooldownTotal * 1000;
+                hunt.log = [`#${hunt.count} · ${time} · ${Math.round(duration)}s`, ...hunt.log].slice(0, 4);
+            }
+            renderHunt();
+        }
+
+        function resetHunts() {
+            Object.assign(hunt, { active: false, count: 0, longest: 0, lastEndedAt: 0, cooldownEnd: 0, log: [] });
+            renderHunt();
+        }
+
+        function renderHunt() {
+            const now = Date.now();
+            const cooldownLeft = (hunt.cooldownEnd - now) / 1000;
+            const clock = $("hunt-clock");
+            const status = $("hunt-state");
+            const bar = $("cool-fill");
+            const button = $("hunt-btn");
+
+            clock.classList.toggle("on", hunt.active);
+            button.classList.toggle("on", hunt.active);
+
+            if (hunt.active) {
+                clock.textContent = formatClock((now - hunt.startedAt) / 1000);
+                status.textContent = "POLOWANIE TRWA – UCIEKAJ!";
+                bar.style.width = "0";
+                button.textContent = "■ KONIEC POLOWANIA [H]";
+            } else if (cooldownLeft > 0) {
+                clock.textContent = Math.ceil(cooldownLeft) + "s";
+                status.textContent = "COOLDOWN – DUCH NIE POLUJE";
+                bar.style.width = (cooldownLeft / hunt.cooldownTotal) * 100 + "%";
+                button.textContent = "▶ START POLOWANIA [H]";
+            } else {
+                clock.textContent = "00:00";
+                status.textContent = hunt.count ? "COOLDOWN ZAKOŃCZONY – MOŻE POLOWAĆ" : "BRAK POLOWANIA";
+                bar.style.width = "0";
+                button.textContent = "▶ START POLOWANIA [H]";
+            }
+
+            let stats = `Polowania: <b>${hunt.count}</b>`;
+            if (hunt.count) {
+                stats += ` · najdłuższe: <b>${Math.round(hunt.longest)}s</b>`;
+                if (!hunt.active) stats += ` · od ostatniego: <b>${formatClock((now - hunt.lastEndedAt) / 1000)}</b>`;
+            }
+            $("hunt-stats").innerHTML = stats;
+            $("hunt-log").innerHTML = hunt.log.join("<br>");
+        }
+
+
+        /* ==========================================================================
+           10. FIELD NOTES (saved in the browser)
+           ========================================================================== */
+
+        function saveNotes() {
+            writeStorage("gl-notes", $("notes").value);
+        }
+
+        function addNote(text) {
+            const notes = $("notes");
+            const needsBreak = notes.value && !notes.value.endsWith("\n");
+            notes.value += (needsBreak ? "\n" : "") + text;
+            notes.focus();
+            saveNotes();
+        }
+
+
+        /* ==========================================================================
+           11. VISUAL EFFECTS
+           ========================================================================== */
+
+        /* Soft glow that follows the mouse across the page. */
+        function bindCursorGlow() {
+            document.addEventListener("mousemove", event => {
+                document.body.style.setProperty("--mx", event.clientX + "px");
+                document.body.style.setProperty("--my", event.clientY + "px");
+            });
+        }
+
+        /* Cyan and magenta sparks drifting upwards behind the page. */
+        function startParticles() {
+            if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+            const canvas = $("fx");
+            const ctx = canvas.getContext("2d");
+            let width, height;
+
+            const resize = () => {
+                width = canvas.width = innerWidth;
+                height = canvas.height = innerHeight;
+            };
+            resize();
+            addEventListener("resize", resize);
+
+            const sparks = Array.from({ length: 60 }, () => ({
+                x: Math.random() * innerWidth,
+                y: Math.random() * innerHeight,
+                radius: Math.random() * 2 + 0.4,
+                speed: Math.random() * 0.4 + 0.1,
+                phase: Math.random() * Math.PI * 2,
+                color: Math.random() < 0.7 ? "0,229,255" : "255,43,214"
+            }));
+
+            function frame() {
+                ctx.clearRect(0, 0, width, height);
+                for (const spark of sparks) {
+                    spark.phase += 0.004;
+                    spark.y -= spark.speed;
+                    spark.x += Math.sin(spark.phase) * 0.4;
+                    if (spark.y < -10) {                      // respawn at the bottom
+                        spark.y = height + 10;
+                        spark.x = Math.random() * width;
+                    }
+                    const twinkle = 0.15 + 0.25 * Math.sin(spark.phase * 3) ** 2;
+                    ctx.beginPath();
+                    ctx.fillStyle = `rgba(${spark.color},${twinkle})`;
+                    ctx.shadowBlur = 12;
+                    ctx.shadowColor = `rgb(${spark.color})`;
+                    ctx.arc(spark.x, spark.y, spark.radius, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                requestAnimationFrame(frame);
+            }
+            frame();
+        }
+
+
+        /* ==========================================================================
+           12. KEYBOARD SHORTCUTS
+               /  search      1-7  evidence      H  hunt start/end      Esc  close cards      ?  hotkeys panel
+           ========================================================================== */
+
+        /* Hotkeys panel (the ? button / ? key) */
+        const hotkeysOpen = () => $("hk-overlay").classList.contains("open");
+        function setHotkeys(open) {
+            $("hk-overlay").classList.toggle("open", open);
+            if (open) $("hk-close").focus(); else $("hk-btn").focus();
+        }
+
+        function bindShortcuts() {
+            $("hk-btn").addEventListener("click", () => setHotkeys(!hotkeysOpen()));
+            $("hk-close").addEventListener("click", () => setHotkeys(false));
+            $("hk-overlay").addEventListener("click", event => {
+                if (event.target === $("hk-overlay")) setHotkeys(false);   // click on the dark background
+            });
+
+            document.addEventListener("keydown", event => {
+                if (event.key === "Escape") {
+                    if (hotkeysOpen()) { setHotkeys(false); return; }
+                    $$(".card-container.flipped").forEach(card => card.classList.remove("flipped"));
+                    return;
+                }
+                if (isTyping() || event.ctrlKey || event.metaKey || event.altKey) return;
+
+                if (event.key === "?") {
+                    event.preventDefault();
+                    setHotkeys(!hotkeysOpen());
+                    return;
+                }
+                if (hotkeysOpen()) return;   // other shortcuts pause while the panel is open
+
+                if (event.key === "/") {
+                    event.preventDefault();
+                    $("search").focus();
+                } else if (event.key.toLowerCase() === "h") {
+                    toggleHunt();
+                } else if (event.key.toLowerCase() === "f") {
+                    flipAllCards();
+                } else {
+                    const number = parseInt(event.key, 10);
+                    if (number >= 1 && number <= EVIDENCE.length) $$(".ev-btn")[number - 1]?.click();
+                }
+            });
+        }
+
+
+        /* ==========================================================================
+           13. START-UP - connect the page to the code above
+           ========================================================================== */
+
+        function init() {
+            /* Sidebar */
+            $("menu-toggle").addEventListener("click", () => {
+                const open = $("sidebar").classList.toggle("active");
+                $("menu-icon").innerText = open ? "✕" : "☰";
+                $("menu-text").innerText = open ? "CLOSE" : "LAB TOOLS";
+            });
+
+            /* Smudge timer */
+            $$(".timer-btn").forEach(button =>
+                button.addEventListener("click", () => startSmudge(Number(button.dataset.seconds))));
+
+            /* Hunt tracker */
+            $("hunt-btn").addEventListener("click", toggleHunt);
+            $("hunt-reset").addEventListener("click", resetHunts);
+            setInterval(renderHunt, 500);
+
+            /* Speed detector */
+            buildMeter();
+            $("bpm-input").addEventListener("input", calculateSpeed);
+            $("tap-btn").addEventListener("click", tapBeat);
+            calculateSpeed();
+
+            /* Field notes */
+            $("notes").value = readStorage("gl-notes");
+            $("notes").addEventListener("input", saveNotes);
+            $$("[data-note]").forEach(button =>
+                button.addEventListener("click", () => addNote(button.dataset.note)));
+            $("notes-clear").addEventListener("click", () => { $("notes").value = ""; saveNotes(); });
+
+            /* Search, sorting & evidence filters */
+            $("search").addEventListener("input", render);
+            $("sort").addEventListener("change", render);
+            $("reset-filters").addEventListener("click", resetFilters);
+            $("flip-all").addEventListener("click", flipAllCards);
+            $$(".ev-btn").forEach(button => button.addEventListener("click", () => cycleEvidence(button)));
+
+            bindGrid();
+            bindAdvisor();
+            bindShortcuts();
+            bindCursorGlow();
+            startParticles();
+
+            $("total").innerText = ghosts.length;
+            renderHunt();
+            render();
+        }
+
+        init();
+    </script>
+
+    <script>
+        /* ==========================================================================
+           MINI-PLAYER - a floating, draggable, resizable map window
+           State (open / map / position / size) is saved in the browser, and maps.html
+           can send a map here with its "MINI-ODTWARZACZ" button.
+           The map list below must match the one in maps.html.
+           ========================================================================== */
+        (function () {
+            "use strict";
+
+            const IMAGE_FOLDER = "../maps2/";
+            const IMAGE_EXTENSIONS = ["jpg", "png", "webp", "jpeg"];
+            const MAPS = [
+                /* Small */
+                { name: "6 Tanglewood Drive",             file: "tanglewood",                size: "small" },
+                { name: "42 Edgefield Road",              file: "edgefield",                 size: "small" },
+                { name: "10 Ridgeview Court",             file: "ridgeview",                 size: "small" },
+                { name: "Nell's Diner",                   file: "nells-diner",               size: "small" },
+                { name: "Grafton Farmhouse",              file: "grafton",                   size: "small" },
+                { name: "13 Willow Street",               file: "willow",                    size: "small" },
+                { name: "Point Hope Restricted",          file: "point-hope-restricted",     size: "small" },
+                { name: "Prison Restricted - F1",              file: "prison-restricted1",         size: "small" },
+                { name: "Prison Restricted - F2",              file: "prison-restricted2",         size: "small" },
+                { name: "Camp Woodwind",                  file: "camp-woodwind",             size: "small" },
+
+                /* Medium */
+                { name: "Point Hope",                     file: "point-hope",                size: "medium" },
+                { name: "Brownstone High School Restricted - F1 Left", file: "brownstone-restricted1",  size: "medium" },
+                { name: "Brownstone High School Restricted - F1 Right", file: "brownstone-restricted2",  size: "medium" },
+                { name: "Brownstone High School Restricted - F2 Left", file: "brownstone-restricted3",  size: "medium" },
+                { name: "Brownstone High School Restricted - F2 Right", file: "brownstone-restricted4",  size: "medium" },
+                { name: "Bleasdale Farmhouse",            file: "bleasdale",                 size: "medium" },
+                { name: "Sunny Meadows Restricted - Courtyard",       file: "sunny-meadows-restricted1",  size: "medium" },
+                { name: "Sunny Meadows Restricted - Female Wing",       file: "sunny-meadows-restricted2",  size: "medium" },
+                { name: "Sunny Meadows Restricted - Hospital",       file: "sunny-meadows-restricted3",  size: "medium" },
+                { name: "Sunny Meadows Restricted - Male Wing",       file: "sunny-meadows-restricted4",  size: "medium" },
+                { name: "Sunny Meadows Restricted - Basement",       file: "sunny-meadows-restricted5",  size: "medium" },
+                { name: "Prison",                         file: "prison",                    size: "medium" },
+                { name: "Maple Lodge Campsite",           file: "maple-lodge",               size: "medium" },
+
+                /* Large */
+                { name: "Brownstone High School",         file: "brownstone",                size: "large" },
+                { name: "Sunny Meadows",                  file: "sunny-meadows",             size: "large" }
+            ];
+
+            const STORE_KEY = "gl-mini";
+            const SIZE_TITLES = { small: "Małe mapy", medium: "Średnie mapy", large: "Duże mapy" };
+
+            function readState() {
+                try { return JSON.parse(localStorage.getItem(STORE_KEY) || "{}"); } catch (error) { return {}; }
+            }
+            const saved = readState();
+            if (saved.v !== 3) { delete saved.x; delete saved.y; delete saved.w; delete saved.h; }    // older layouts: start from the new default
+            const state = Object.assign({ v: 3, open: false, file: "", docked: true, x: null, y: null, w: 380, h: 260 }, saved);
+            function saveState() {
+                try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (error) { /* storage blocked */ }
+            }
+
+            /* ---------- build the window ---------- */
+            const mini = document.createElement("div");
+            mini.className = "mini";
+            mini.hidden = true;
+            mini.innerHTML = `
+                <div class="mini-bar">
+                    <select class="mini-select" title="Wybierz mapę"></select>
+                    <button class="mini-dock" title="Przypnij w prawym górnym rogu strony">📌</button>
+                    <button class="mini-full" title="Otwórz pełną stronę map">⤢</button>
+                    <button class="mini-pip" title="Wyskakujące okno nad innymi oknami (Chrome / Edge)">⧉</button>
+                    <button class="mini-close" title="Zamknij">✕</button>
+                </div>
+                <div class="mini-view">
+                    <img alt="" hidden>
+                    <div class="mini-msg">Wybierz mapę</div>
+                </div>
+                <div class="mini-grip grip-bl" data-corner="bl" title="Przeciągnij, aby zmienić rozmiar"></div>
+                <div class="mini-grip grip-br" data-corner="br" title="Przeciągnij, aby zmienić rozmiar"></div>`;
+            document.body.appendChild(mini);
+
+            const find = selector => mini.querySelector(selector);
+            const bar = find(".mini-bar"), select = find(".mini-select"), view = find(".mini-view");
+            const img = find(".mini-view img"), msg = find(".mini-msg");
+
+            select.innerHTML = ["small", "medium", "large"].map(size =>
+                `<optgroup label="${SIZE_TITLES[size]}">` +
+                MAPS.filter(map => map.size === size).map(map => `<option value="${map.file}">${map.name}</option>`).join("") +
+                `</optgroup>`).join("");
+
+            /* ---------- zoom & pan inside the window ---------- */
+            const v = { scale: 1, fit: 1, x: 0, y: 0, fitted: true };
+
+            function applyView() {
+                img.style.transform = `translate(${v.x}px, ${v.y}px) scale(${v.scale})`;
+            }
+
+            function fit() {
+                if (!img.naturalWidth) return;
+                const w = view.clientWidth, h = view.clientHeight;
+                v.fit = Math.min(w / img.naturalWidth, h / img.naturalHeight);
+                v.scale = v.fit;
+                v.x = (w - img.naturalWidth * v.scale) / 2;
+                v.y = (h - img.naturalHeight * v.scale) / 2;
+                v.fitted = true;
+                applyView();
+            }
+
+            function zoomAt(factor, cx, cy) {
+                const next = Math.min(v.fit * 10, Math.max(v.fit * 0.5, v.scale * factor));
+                const ratio = next / v.scale;
+                v.x = cx - (cx - v.x) * ratio;
+                v.y = cy - (cy - v.y) * ratio;
+                v.scale = next;
+                v.fitted = false;
+                applyView();
+            }
+
+            view.addEventListener("wheel", event => {
+                event.preventDefault();
+                const box = view.getBoundingClientRect();
+                zoomAt(event.deltaY < 0 ? 1.15 : 1 / 1.15, event.clientX - box.left, event.clientY - box.top);
+            }, { passive: false });
+
+            let pan = null;
+            view.addEventListener("pointerdown", event => {
+                pan = { x: event.clientX - v.x, y: event.clientY - v.y };
+                view.setPointerCapture(event.pointerId);
+            });
+            view.addEventListener("pointermove", event => {
+                if (!pan) return;
+                v.x = event.clientX - pan.x;
+                v.y = event.clientY - pan.y;
+                v.fitted = false;
+                applyView();
+            });
+            ["pointerup", "pointercancel"].forEach(name => view.addEventListener(name, () => { pan = null; }));
+            view.addEventListener("dblclick", fit);                      // double-click = fit the whole map
+
+            /* ---------- loading a map (tries .jpg, .png, .webp, .jpeg) ---------- */
+            function showMessage(html) {
+                msg.innerHTML = html;
+                msg.hidden = false;
+            }
+
+            function loadMap(file) {
+                const map = MAPS.find(item => item.file === file) || MAPS[0];
+                state.file = map.file;
+                select.value = map.file;
+                saveState();
+
+                let attempt = 0;
+                img.hidden = true;
+                showMessage("Ładowanie…");
+
+                const tryNext = () => {
+                    if (attempt >= IMAGE_EXTENSIONS.length) {
+                        showMessage(`Brak zdjęcia:<br><b>${map.name}</b><br>${IMAGE_FOLDER}${map.file}.jpg`);
+                        return;
+                    }
+                    img.src = `${IMAGE_FOLDER}${map.file}.${IMAGE_EXTENSIONS[attempt++]}`;
+                };
+                img.onerror = tryNext;
+                img.onload = () => { msg.hidden = true; img.hidden = false; fit(); };
+                tryNext();
+            }
+
+            /* ---------- position, size, open / close ---------- */
+            function place() {
+                const w = Math.min(state.w, innerWidth - 20), h = Math.min(state.h, innerHeight - 20);
+                mini.style.width = w + "px";
+                mini.style.height = h + "px";
+
+                mini.classList.toggle("docked", state.docked);
+                if (state.docked) {                           // pinned top-right: the stylesheet positions it
+                    mini.style.left = "";
+                    mini.style.top = "";
+                    return;
+                }
+                const x = state.x ?? innerWidth - w - 20;
+                const y = state.y ?? 20;
+                mini.style.left = Math.min(Math.max(0, x), innerWidth - 80) + "px";
+                mini.style.top = Math.min(Math.max(0, y), innerHeight - 40) + "px";
+            }
+
+            let pipWindow = null;
+
+            function open(file) {
+                state.open = true;
+                state.file = file || state.file || MAPS[0].file;
+                mini.hidden = false;
+                place();
+                loadMap(state.file);
+                saveState();
+            }
+
+            function close() {
+                if (pipWindow) pipWindow.close();
+                state.open = false;
+                mini.hidden = true;
+                saveState();
+            }
+
+            /* drag the window by its top bar */
+            let drag = null;
+            bar.addEventListener("pointerdown", event => {
+                if (event.target.closest("button, select") || mini.classList.contains("in-pip")) return;
+                const box = mini.getBoundingClientRect();
+                drag = { dx: event.clientX - box.left, dy: event.clientY - box.top };
+                bar.setPointerCapture(event.pointerId);
+                bar.style.cursor = "grabbing";
+            });
+            bar.addEventListener("pointermove", event => {
+                if (!drag) return;
+                if (state.docked) {                           // first movement: leave the corner and float
+                    state.docked = false;
+                    mini.classList.remove("docked");
+                }
+                mini.style.left = Math.min(Math.max(0, event.clientX - drag.dx), innerWidth - 80) + "px";
+                mini.style.top = Math.min(Math.max(0, event.clientY - drag.dy), innerHeight - 40) + "px";
+            });
+            function endDrag() {
+                if (!drag) return;
+                drag = null;
+                bar.style.cursor = "";
+                if (!state.docked) {
+                    state.x = mini.offsetLeft;
+                    state.y = mini.offsetTop;
+                }
+                saveState();
+            }
+            ["pointerup", "pointercancel"].forEach(name => bar.addEventListener(name, endDrag));
+
+            /* remember the size you resize it to, and keep the map fitted unless you zoomed */
+            new ResizeObserver(() => {
+                if (mini.hidden) return;
+                if (!mini.classList.contains("in-pip")) {
+                    state.w = mini.offsetWidth;
+                    state.h = mini.offsetHeight;
+                    saveState();
+                }
+                if (v.fitted) fit();
+            }).observe(mini);
+
+            addEventListener("resize", () => {
+                if (!mini.hidden && !mini.classList.contains("in-pip")) place();
+            });
+
+            /* ---------- resize by dragging a bottom corner ---------- */
+            let resizing = null;
+            mini.querySelectorAll(".mini-grip").forEach(grip => {
+                grip.addEventListener("pointerdown", event => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    const box = mini.getBoundingClientRect();
+                    resizing = { corner: grip.dataset.corner, x: event.clientX, y: event.clientY, w: box.width, h: box.height, left: box.left };
+                    grip.setPointerCapture(event.pointerId);
+                });
+
+                grip.addEventListener("pointermove", event => {
+                    if (!resizing) return;
+                    const dx = event.clientX - resizing.x, dy = event.clientY - resizing.y;
+                    const fromLeft = resizing.corner === "bl";                  // left corner: dragging left makes it wider
+                    const w = Math.min(Math.max(resizing.w + (fromLeft ? -dx : dx), 260), innerWidth - 20);
+                    const h = Math.min(Math.max(resizing.h + dy, 190), innerHeight - 20);
+                    mini.style.width = w + "px";
+                    mini.style.height = h + "px";
+                    if (fromLeft && !state.docked) {                            // floating: keep the right edge where it is
+                        mini.style.left = Math.max(0, resizing.left + resizing.w - w) + "px";
+                    }
+                });
+
+                const finishResize = () => {
+                    if (!resizing) return;
+                    resizing = null;
+                    state.w = mini.offsetWidth;
+                    state.h = mini.offsetHeight;
+                    if (!state.docked) {
+                        state.x = mini.offsetLeft;
+                        state.y = mini.offsetTop;
+                    }
+                    saveState();
+                    if (v.fitted) fit();
+                };
+                grip.addEventListener("pointerup", finishResize);
+                grip.addEventListener("pointercancel", finishResize);
+            });
+
+            /* ---------- buttons ---------- */
+            select.addEventListener("change", () => loadMap(select.value));
+            find(".mini-full").addEventListener("click", () => { location.href = "maps.html#" + state.file; });
+            find(".mini-close").addEventListener("click", close);
+            find(".mini-dock").addEventListener("click", () => {          // snap back to the top-right corner
+                state.docked = true;
+                state.x = null;
+                state.y = null;
+                place();
+                saveState();
+            });
+
+            /* Pop out into an always-on-top window (Document Picture-in-Picture: Chrome / Edge). */
+            const pipButton = find(".mini-pip");
+            if (!("documentPictureInPicture" in window)) pipButton.hidden = true;
+
+            pipButton.addEventListener("click", async () => {
+                if (pipWindow) { pipWindow.close(); return; }
+                try {
+                    pipWindow = await documentPictureInPicture.requestWindow({ width: mini.offsetWidth, height: mini.offsetHeight });
+                } catch (error) { return; }
+
+                const style = document.createElement("style");
+                style.textContent = document.getElementById("mini-style").textContent;
+                pipWindow.document.head.appendChild(style);
+                pipWindow.document.body.style.cssText = "margin:0;background:#031017";
+                mini.classList.add("in-pip");
+                pipWindow.document.body.appendChild(mini);
+                setTimeout(fit, 50);
+
+                pipWindow.addEventListener("pagehide", () => {          // window closed: bring the player back to the page
+                    mini.classList.remove("in-pip");
+                    document.body.appendChild(mini);
+                    pipWindow = null;
+                    place();
+                    setTimeout(fit, 50);
+                });
+            });
+
+            /* start-up */
+
+            window.GhostMini = { open, close };
+            /* maps.html opens this page as index.html#mini=<map>; that works even when the browser
+               doesn't share saved data between pages. Otherwise restore the last state. */
+            const fromMaps = location.hash.match(/^#mini=([\w-]+)/);
+            if (fromMaps) {
+                try { history.replaceState(null, "", location.pathname + location.search); } catch (error) { /* ignore */ }
+                open(decodeURIComponent(fromMaps[1]));
+            } else if (state.open) {
+                open(state.file);
+            }
+        })();
+    </script>
+</body>
+</html>

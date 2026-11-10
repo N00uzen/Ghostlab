@@ -17,7 +17,7 @@
         </script>
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>GHOSTLAB // MEDIA</title>
-    <link rel="icon" type="image/x-icon" href="./icons/ghostlab.ico">
+    <link rel="icon" type="image/x-icon" href="../icons/ghostlab.ico">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 
     <style>
@@ -549,6 +549,40 @@
         .m-price.t15 { color: #f9f002; }
         .m-price.t10 { color: #39ff88; }
         .m-price.t5  { color: #c4e6ee; }
+
+        /* photos, video and sound side by side (they stack again on narrower screens) */
+        #m-tables {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 20px;
+            align-items: start;
+        }
+
+        #m-tables .m-panel {
+            margin-bottom: 0;
+            padding: 20px 18px;
+        }
+
+        #m-tables .m-head,
+        #m-tables .m-row {
+            grid-template-columns: 1fr 64px 64px;
+            gap: 6px;
+        }
+
+        #m-tables .m-head {
+            font-size: 0.64rem;
+            letter-spacing: 0.08em;
+        }
+
+        @media (max-width: 1100px) {
+            #m-tables {
+                grid-template-columns: 1fr;
+            }
+
+            #m-tables .m-panel {
+                padding: 24px;
+            }
+        }
 
         .m-empty {
             display: none;

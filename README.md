@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <b><i>Your co-pilot for every Phasmophobia investigation.</i></b>
+  <b><i>Your partner for every Phasmophobia investigation.</i></b>
 </p>
 
 <p align="center">

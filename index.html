@@ -1604,6 +1604,26 @@
         }
     </style>
     <style id="mobile-style">
+        /* ======== CARD FACES: only the face you can see takes touches and scrolling ======== */
+        /* The face that is turned away used to sit invisibly on top of the visible one. Phones then
+           handed swipes to that hidden face, so the notes on the front would not scroll (the page
+           scrolled instead). "visibility: hidden" takes the unseen face out of touch handling; the
+           switch is timed so both faces stay visible while the card is turning. */
+        .card-back {
+            visibility: hidden;
+            transition: background 0.3s, visibility 0s linear 0.8s;
+        }
+
+        .card-container.flipped .card-back {
+            visibility: visible;
+            transition: background 0.3s;
+        }
+
+        .card-container.flipped .card-front {
+            visibility: hidden;
+            transition: background 0.3s, visibility 0s linear 0.8s;
+        }
+
         /* ======== MOBILE SUPPORT ======== */
         html {
             -webkit-text-size-adjust: 100%;

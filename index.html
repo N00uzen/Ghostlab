@@ -15,7 +15,7 @@
             } catch (error) { /* storage blocked: just show the page */ }
         })();
     </script>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>GHOSTLAB</title>
     <link rel="icon" type="image/x-icon" href="./icons/ghostlab.ico">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
@@ -1603,6 +1603,223 @@
             cursor: default;
         }
     </style>
+    <style id="mobile-style">
+        /* ======== MOBILE SUPPORT ======== */
+        html {
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+        }
+
+        a, button, input, select, textarea, label {
+            touch-action: manipulation;          /* no 300 ms tap delay, no double-tap zoom on buttons */
+        }
+
+        .sidebar-backdrop {
+            display: none;
+        }
+
+        @media (hover: none), (max-width: 900px) {
+            body {
+                background-attachment: scroll;   /* "fixed" backgrounds are jerky or ignored on phones */
+            }
+        }
+
+        /* touch screens: no hover colours that stay stuck after a tap, and no keyboard hints */
+        @media (hover: none) {
+            .card-container:hover .card-front {
+                background: linear-gradient(135deg, var(--neon-blue), #0a6f80);
+            }
+
+            .fav.card-container:hover .card-front {
+                background: linear-gradient(135deg, var(--yel), #a89f00);
+            }
+
+            .hk-btn,
+            .hk-overlay,
+            .kbd-hint {
+                display: none !important;
+            }
+        }
+
+        /* fingers need bigger targets than a mouse pointer */
+        @media (pointer: coarse) {
+            .tool {
+                width: 38px;
+                height: 38px;
+                font-size: 0.95rem;
+            }
+
+            .ev-btn,
+            .reset-btn,
+            .flip-btn {
+                min-height: 44px;
+            }
+
+            .adv-chip {
+                padding: 9px 12px;
+            }
+
+            .timer-btn {
+                padding: 14px 4px;
+            }
+
+            .mic-btn {
+                padding: 7px 14px;
+            }
+        }
+
+        @media (max-width: 700px) {
+            /* menu button + sidebar */
+            .menu-toggle {
+                top: max(12px, env(safe-area-inset-top));
+                left: max(12px, env(safe-area-inset-left));
+                padding: 11px 14px;
+                font-size: 0.75rem;
+            }
+
+            .sidebar {
+                width: min(340px, 88vw);
+                height: 100vh;
+                height: 100dvh;
+                padding: 76px 16px calc(32px + env(safe-area-inset-bottom));
+                gap: 16px;
+            }
+
+            .sidebar-widget {
+                padding: 14px;
+            }
+
+            .sidebar-backdrop {
+                display: block;
+                position: fixed;
+                inset: 0;
+                z-index: 990;
+                background: rgba(1, 6, 10, 0.62);
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 0.3s;
+            }
+
+            .sidebar-backdrop.show {
+                opacity: 1;
+                pointer-events: auto;      /* tap outside the menu to close it */
+            }
+
+            /* page */
+            .content {
+                padding: 84px max(14px, env(safe-area-inset-right)) calc(56px + env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
+            }
+
+            .hero {
+                margin-bottom: 28px;
+            }
+
+            .eyebrow {
+                font-size: 0.66rem;
+                letter-spacing: 0.12em;
+                line-height: 1.6;
+            }
+
+            .hero h1 {
+                font-size: clamp(2.1rem, 11vw, 3.4rem);
+                letter-spacing: 0.06em;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            /* search, sort and evidence filters */
+            .top-controls {
+                padding: 14px;
+                gap: 12px;
+                margin-bottom: 26px;
+            }
+
+            .search-row {
+                gap: 10px;
+            }
+
+            #search,
+            #sort,
+            #notes,
+            .mini-select {
+                font-size: 16px;               /* below 16 px iOS zooms the page when you tap the field */
+            }
+
+            #search {
+                flex: 1 1 100%;
+                min-width: 0;
+            }
+
+            #sort {
+                flex: 1 1 100%;
+            }
+
+            .count {
+                flex: 1 1 auto;
+            }
+
+            .reset-btn,
+            .flip-btn {
+                flex: 1 1 auto;
+            }
+
+            .ev-btn {
+                flex: 1 1 calc(50% - 5px);
+                padding: 11px 8px;
+            }
+
+            /* ghost cards */
+            .grid {
+                gap: 22px;
+            }
+
+            .card-front,
+            .card-back {
+                padding: 20px;
+            }
+
+            .card-front h3 {
+                font-size: 1.5rem;
+            }
+
+            .back-name {
+                font-size: 1.25rem;
+            }
+
+            /* floating map window becomes a panel along the bottom of the screen */
+            .mini,
+            .mini.docked {
+                position: fixed !important;
+                left: 8px !important;
+                right: 8px !important;
+                top: auto !important;
+                bottom: calc(8px + env(safe-area-inset-bottom)) !important;
+                width: auto !important;
+                max-width: none;
+                height: 46vh !important;
+                height: 46dvh !important;
+                min-height: 220px;
+                max-height: none;
+            }
+
+            .mini-grip,
+            .mini-pip {
+                display: none !important;
+            }
+
+            .mini-bar button {
+                width: 40px;
+                height: 36px;
+                font-size: 1rem;
+            }
+
+            .mini-select {
+                padding: 7px 6px;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -1663,6 +1880,7 @@
                 <a class="maps-link" href="cursed.html"><span>☠️</span><span>PRZEKLĘTE PRZEDMIOTY</span></a>
                 <a class="maps-link" href="equipment.html"><span>🧰</span><span>SPRZĘT — PRZEWODNIK</span></a>
                 <a class="maps-link" href="glossary.html"><span>📚</span><span>SŁOWNIK POJĘĆ</span></a>
+                <a class="maps-link" href="media.html"><span>📸</span><span>MEDIA — CENNIK</span></a>
             </div>
         </section>
 
@@ -1730,6 +1948,8 @@
         </section>
     </aside>
 
+    <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
     <!-- ============================== MAIN PAGE ============================== -->
     <main class="content">
         <header class="hero">
@@ -1759,7 +1979,7 @@
             <div class="filter-hint">
                 Klik na dowód: ✔ mamy · drugi raz: ✖ wykluczony · trzeci: wyczyść.
                 Na karcie: ★ ulubiony, ✖ odrzuć ducha.
-                Skróty: „/” szuka · 1 EMF, 2 Box, 3 UV, 4 DOTS, 5 Writing, 6 Orbs, 7 Freezing · H polowanie · F obróć wszystkie karty · Esc zamyka karty · ? lista skrótów.
+                <span class="kbd-hint">Skróty: „/” szuka · 1 EMF, 2 Box, 3 UV, 4 DOTS, 5 Writing, 6 Orbs, 7 Freezing · H polowanie · F obróć wszystkie karty · Esc zamyka karty · ? lista skrótów.</span>
             </div>
 
             <div class="evidence-filters" id="evidence-filters">
@@ -2559,6 +2779,53 @@
             cards.forEach(card => card.classList.toggle("flipped", !allFlipped));
         }
 
+        /* ★ Puts the cards already on screen into the right order (favorites first) without rebuilding them,
+           so cards you flipped stay flipped. The cards slide to their new places, and if the starred card
+           lands outside the screen the page scrolls to it. */
+        function resortCards(movedCard, refocus) {
+            const grid = $("ghost-grid");
+            const cards = [...grid.querySelectorAll(".card-container")];
+            const byName = new Map(cards.map(card => [card.querySelector(".tool.star").dataset.name, card]));
+            const before = new Map(cards.map(card => [card, card.getBoundingClientRect()]));
+
+            sortGhosts(filterGhosts()).forEach((ghost, position) => {      // same order render() would use
+                const card = byName.get(ghost.name);
+                if (!card) return;
+                grid.appendChild(card);
+                card.style.setProperty("--i", position);
+            });
+
+            const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+            const spot = movedCard.getBoundingClientRect();
+            const offscreen = spot.bottom < 0 || spot.top > innerHeight;
+
+            if (!reduce) {
+                cards.forEach(card => {
+                    if (card === movedCard && offscreen) return;           // that one is scrolled to instead
+                    const was = before.get(card), now = card.getBoundingClientRect();
+                    const dx = was.left - now.left, dy = was.top - now.top;
+                    if (dx || dy) {
+                        card.animate(
+                            [{ transform: `translate(${dx}px, ${dy}px)` }, { transform: "translate(0, 0)" }],
+                            { duration: 450, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" }
+                        );
+                    }
+                });
+            }
+
+            if (offscreen) movedCard.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" });
+
+            if (!reduce) {                                                 // short gold glow so you can spot it
+                movedCard.animate([
+                    { filter: "drop-shadow(0 0 0 rgba(249, 240, 2, 0))" },
+                    { filter: "drop-shadow(0 0 26px rgba(249, 240, 2, 0.95))", offset: 0.4 },
+                    { filter: "drop-shadow(0 0 0 rgba(249, 240, 2, 0))" }
+                ], { duration: 1000 });
+            }
+
+            if (refocus) movedCard.querySelector(".tool.star").focus({ preventScroll: true });   // keyboard users keep their place
+        }
+
         /* Card interaction is handled once on the grid instead of on every card. */
         function bindGrid() {
             const grid = $("ghost-grid");
@@ -2578,8 +2845,10 @@
                     const name = tool.dataset.name;
                     marks.has(name) ? marks.delete(name) : marks.add(name);
                     saveMarks();
-                    tool.closest(".card-container").classList.toggle(isStar ? "fav" : "out", marks.has(name));
-            if (!isStar) updateSummary();                 // crossing a ghost off changes the count
+                    const card = tool.closest(".card-container");
+                    card.classList.toggle(isStar ? "fav" : "out", marks.has(name));
+                    if (isStar) resortCards(card, event.detail === 0);   // favorites jump to the top (or back down)
+                    else updateSummary();                                // crossing a ghost off changes the count
                     return;
                 }
 
@@ -3055,7 +3324,7 @@
             resize();
             addEventListener("resize", resize);
 
-            const sparks = Array.from({ length: 60 }, () => ({
+            const sparks = Array.from({ length: innerWidth < 700 ? 28 : 60 }, () => ({
                 x: Math.random() * innerWidth,
                 y: Math.random() * innerHeight,
                 radius: Math.random() * 2 + 0.4,
@@ -3143,11 +3412,14 @@
 
         function init() {
             /* Sidebar */
-            $("menu-toggle").addEventListener("click", () => {
-                const open = $("sidebar").classList.toggle("active");
+            const setSidebar = open => {
+                $("sidebar").classList.toggle("active", open);
+                $("sidebar-backdrop").classList.toggle("show", open);
                 $("menu-icon").innerText = open ? "✕" : "☰";
                 $("menu-text").innerText = open ? "CLOSE" : "LAB TOOLS";
-            });
+            };
+            $("menu-toggle").addEventListener("click", () => setSidebar(!$("sidebar").classList.contains("active")));
+            $("sidebar-backdrop").addEventListener("click", () => setSidebar(false));
 
             /* Smudge timer */
             $$(".timer-btn").forEach(button =>
@@ -3313,20 +3585,80 @@
                 zoomAt(event.deltaY < 0 ? 1.15 : 1 / 1.15, event.clientX - box.left, event.clientY - box.top);
             }, { passive: false });
 
-            let pan = null;
+            /* One finger / mouse drags, two fingers pinch-zoom, a quick double tap fits the map. */
+            const pointers = new Map();
+            let pan = null, pinch = null, tap = null, lastTouchTap = 0, lastDouble = 0;
+
+            const pinchNow = () => {
+                const [a, b] = [...pointers.values()];
+                const box = view.getBoundingClientRect();
+                return {
+                    dist: Math.hypot(a.x - b.x, a.y - b.y) || 1,
+                    cx: (a.x + b.x) / 2 - box.left,
+                    cy: (a.y + b.y) / 2 - box.top
+                };
+            };
+
             view.addEventListener("pointerdown", event => {
-                pan = { x: event.clientX - v.x, y: event.clientY - v.y };
                 view.setPointerCapture(event.pointerId);
+                pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+                if (pointers.size === 1) {
+                    pan = { x: event.clientX - v.x, y: event.clientY - v.y };
+                    tap = { t: Date.now(), x: event.clientX, y: event.clientY, moved: false };
+                } else if (pointers.size === 2) {
+                    pan = null;
+                    tap = null;
+                    pinch = pinchNow();
+                }
             });
+
             view.addEventListener("pointermove", event => {
-                if (!pan) return;
-                v.x = event.clientX - pan.x;
-                v.y = event.clientY - pan.y;
-                v.fitted = false;
-                applyView();
+                if (!pointers.has(event.pointerId)) return;
+                pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+                if (tap && Math.hypot(event.clientX - tap.x, event.clientY - tap.y) > 10) tap.moved = true;
+
+                if (pinch && pointers.size === 2) {
+                    const now = pinchNow();
+                    v.x += now.cx - pinch.cx;
+                    v.y += now.cy - pinch.cy;
+                    zoomAt(now.dist / pinch.dist, now.cx, now.cy);
+                    pinch = now;
+                } else if (pan) {
+                    v.x = event.clientX - pan.x;
+                    v.y = event.clientY - pan.y;
+                    v.fitted = false;
+                    applyView();
+                }
             });
-            ["pointerup", "pointercancel"].forEach(name => view.addEventListener(name, () => { pan = null; }));
-            view.addEventListener("dblclick", fit);                      // double-click = fit the whole map
+
+            const endPointer = event => {
+                pointers.delete(event.pointerId);
+                if (pointers.size === 2) {
+                    pinch = pinchNow();
+                } else if (pointers.size === 1) {
+                    const [p] = [...pointers.values()];
+                    pan = { x: p.x - v.x, y: p.y - v.y };
+                    pinch = null;
+                } else {
+                    pan = null;
+                    pinch = null;
+                    if (event.type === "pointerup" && event.pointerType === "touch" && tap && !tap.moved && Date.now() - tap.t < 300) {
+                        if (Date.now() - lastTouchTap < 350) {
+                            lastTouchTap = 0;
+                            lastDouble = Date.now();
+                            fit();
+                        } else {
+                            lastTouchTap = Date.now();
+                        }
+                    }
+                    tap = null;
+                }
+            };
+            view.addEventListener("pointerup", endPointer);
+            view.addEventListener("pointercancel", endPointer);
+            view.addEventListener("dblclick", () => {                    // double-click = fit the whole map
+                if (Date.now() - lastDouble > 600) fit();
+            });
 
             /* ---------- loading a map (tries .jpg, .png, .webp, .jpeg) ---------- */
             function showMessage(html) {

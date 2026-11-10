@@ -13,7 +13,7 @@
                 } catch (error) { /* storage blocked: just show the page */ }
             })();
     </script>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>GHOSTLAB // MAPY</title>
     <link rel="icon" type="image/x-icon" href="./icons/ghostlab.ico">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
@@ -306,6 +306,200 @@
             }
         }
     </style>
+    <style id="mobile-style">
+        /* ======== MOBILE SUPPORT ======== */
+        html {
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+        }
+
+        a, button, input, select, textarea, label {
+            touch-action: manipulation;          /* no 300 ms tap delay, no double-tap zoom on buttons */
+        }
+
+        @media (hover: none), (max-width: 900px) {
+            body {
+                background-attachment: scroll;   /* "fixed" backgrounds are jerky or ignored on phones */
+            }
+        }
+
+        @media (max-width: 700px) {
+            .page {
+                padding: 74px max(14px, env(safe-area-inset-right)) calc(52px + env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
+            }
+
+            /* the back button scrolls away with the page instead of covering the text */
+            .back-link {
+                position: absolute;
+                top: max(12px, env(safe-area-inset-top));
+                left: max(12px, env(safe-area-inset-left));
+                padding: 10px 14px;
+                font-size: 0.72rem;
+                letter-spacing: 0.06em;
+            }
+
+            .hero {
+                margin-bottom: 22px;
+            }
+
+            .eyebrow {
+                font-size: 0.66rem;
+                letter-spacing: 0.12em;
+                line-height: 1.6;
+            }
+
+            .hero h1 {
+                font-size: clamp(1.7rem, 8.6vw, 2.6rem);
+                letter-spacing: 0.05em;
+                overflow-wrap: anywhere;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            .jump {
+                gap: 8px;
+                margin-bottom: 20px;
+            }
+
+            .jump a,
+            .filters button {
+                padding: 11px 12px;
+                min-height: 42px;
+                display: inline-flex;
+                align-items: center;
+            }
+
+            .cursed-panel {
+                padding: 16px;
+                margin-bottom: 20px;
+            }
+
+            .cursed-panel h2 {
+                font-size: 1rem;
+            }
+
+            .cursed-grid {
+                gap: 18px;
+            }
+
+            .cursed-card {
+                padding: 16px;
+                max-height: min(620px, 82vh);
+                max-height: min(620px, 82dvh);
+            }
+
+            .cursed-card header {
+                gap: 10px;
+                min-width: 0;
+            }
+
+            .c-icon {
+                flex: none;
+                width: 42px;
+                height: 42px;
+                font-size: 1.3rem;
+            }
+
+            .cursed-card h3 {
+                font-size: 1.05rem;
+                overflow-wrap: anywhere;
+            }
+
+            .c-tagline {
+                font-size: 0.68rem;
+                letter-spacing: 0.06em;
+            }
+
+            .c-table {
+                font-size: 0.88rem;
+            }
+
+            .c-table td {
+                overflow-wrap: anywhere;
+            }
+
+            /* scrollable cards: fade the bottom edge so it is clear there is more to swipe */
+            .c-body {
+                padding-bottom: 28px;
+                -webkit-mask-image: linear-gradient(#000 calc(100% - 28px), transparent);
+                mask-image: linear-gradient(#000 calc(100% - 28px), transparent);
+            }
+
+            .cursed-panel .g-list {
+                margin-left: 0;
+                padding-left: 0;
+            }
+
+        }
+
+        /* narrow phones: tables become stacked rows so the text is not squeezed into columns */
+
+        /* ---- maps: picker and viewer on a phone ---- */
+        .help-touch {
+            display: none;
+        }
+
+        @media (hover: none) {
+            .help-desktop {
+                display: none;
+            }
+
+            .help-touch {
+                display: block;
+            }
+        }
+
+        @media (max-width: 700px) {
+            .map-picker {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+            }
+
+            .map-group-title {
+                grid-column: 1 / -1;
+            }
+
+            .map-btn {
+                min-height: 46px;
+                padding: 10px 10px;
+                font-size: 0.72rem;
+                gap: 6px;
+                line-height: 1.25;
+                text-align: left;
+            }
+
+            .viewer-panel {
+                padding: 12px;
+            }
+
+            .viewer-bar {
+                gap: 10px;
+            }
+
+            .viewer-bar h2 {
+                font-size: 1.05rem;
+                overflow-wrap: anywhere;
+            }
+
+            .viewer-tools {
+                width: 100%;
+            }
+
+            .viewer-tools button {
+                flex: 1 1 auto;
+                min-height: 44px;
+                padding: 10px 12px;
+            }
+
+            .viewer {
+                height: min(70vh, 640px);
+                height: min(70dvh, 640px);
+                min-height: 300px;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -316,7 +510,7 @@
         <header class="hero">
             <div class="eyebrow">[ MAP ARCHIVE // LAYOUT SCANS ]</div>
             <h1>MAPY</h1>
-            <p>Wybierz mapę, aby zobaczyć cały jej układ. Scroll przybliża, przeciąganie przesuwa.</p>
+            <p>Wybierz mapę, aby zobaczyć cały jej układ. Scroll lub szczypanie palcami przybliża, przeciąganie przesuwa.</p>
         </header>
 
         <nav class="map-picker" id="map-picker" aria-label="Wybór mapy"></nav>
@@ -325,6 +519,8 @@
             <div class="viewer-bar">
                 <h2 id="map-title">Wybierz mapę</h2>
                 <div class="viewer-tools">
+                    <button id="prev-map" title="Poprzednia mapa (←)">‹ MAPA</button>
+                    <button id="next-map" title="Następna mapa (→)">MAPA ›</button>
                     <button id="zoom-out" title="Oddal (-)">−</button>
                     <span id="zoom-label">100%</span>
                     <button id="zoom-in" title="Przybliż (+)">+</button>
@@ -339,7 +535,8 @@
                 <div class="viewer-message" id="viewer-message"><em>🗺️</em>Wybierz mapę z listy powyżej.</div>
             </div>
 
-            <div class="help">← → zmiana mapy · + / − zoom · 0 dopasuj · scroll = zoom · przeciągnij = przesuń</div>
+            <div class="help help-desktop">← → zmiana mapy · + / − zoom · 0 dopasuj · scroll = zoom · przeciągnij = przesuń</div>
+            <div class="help help-touch">Jeden palec = przesuwanie · dwa palce = zoom · dwa stuknięcia = przybliż · ‹ MAPA / MAPA › zmieniają mapę</div>
         </section>
     </main>
 
@@ -522,24 +719,83 @@
                 zoomAt(event.deltaY < 0 ? 1.15 : 1 / 1.15, event.clientX - box.left, event.clientY - box.top);
             }, { passive: false });
 
-            let drag = null;
+            /* One finger / mouse drags, two fingers pinch-zoom, a quick double tap zooms in. */
+            const pointers = new Map();
+            let drag = null, pinch = null, tap = null, lastTouchTap = 0, lastDouble = 0;
+
+            const pinchNow = () => {
+                const [a, b] = [...pointers.values()];
+                const box = viewer.getBoundingClientRect();
+                return {
+                    dist: Math.hypot(a.x - b.x, a.y - b.y) || 1,
+                    cx: (a.x + b.x) / 2 - box.left,
+                    cy: (a.y + b.y) / 2 - box.top
+                };
+            };
+
             viewer.addEventListener("pointerdown", event => {
                 if (image.hidden) return;
-                drag = { x: event.clientX - view.x, y: event.clientY - view.y };
                 viewer.setPointerCapture(event.pointerId);
-                viewer.classList.add("dragging");
+                pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+                if (pointers.size === 1) {
+                    drag = { x: event.clientX - view.x, y: event.clientY - view.y };
+                    tap = { t: Date.now(), x: event.clientX, y: event.clientY, moved: false };
+                    viewer.classList.add("dragging");
+                } else if (pointers.size === 2) {
+                    drag = null;
+                    tap = null;
+                    pinch = pinchNow();
+                }
             });
+
             viewer.addEventListener("pointermove", event => {
-                if (!drag) return;
-                view.x = event.clientX - drag.x;
-                view.y = event.clientY - drag.y;
-                applyView();
+                if (!pointers.has(event.pointerId)) return;
+                pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+                if (tap && Math.hypot(event.clientX - tap.x, event.clientY - tap.y) > 10) tap.moved = true;
+
+                if (pinch && pointers.size === 2) {
+                    const now = pinchNow();
+                    view.x += now.cx - pinch.cx;                  // the middle point between the fingers drags the map
+                    view.y += now.cy - pinch.cy;
+                    zoomAt(now.dist / pinch.dist, now.cx, now.cy);  // the distance between the fingers zooms it
+                    pinch = now;
+                } else if (drag) {
+                    view.x = event.clientX - drag.x;
+                    view.y = event.clientY - drag.y;
+                    applyView();
+                }
             });
-            const stopDrag = () => { drag = null; viewer.classList.remove("dragging"); };
-            viewer.addEventListener("pointerup", stopDrag);
-            viewer.addEventListener("pointercancel", stopDrag);
+
+            const endPointer = event => {
+                pointers.delete(event.pointerId);
+                if (pointers.size === 2) {
+                    pinch = pinchNow();
+                } else if (pointers.size === 1) {                 // one finger left after a pinch: keep panning with it
+                    const [p] = [...pointers.values()];
+                    drag = { x: p.x - view.x, y: p.y - view.y };
+                    pinch = null;
+                } else {
+                    drag = null;
+                    pinch = null;
+                    viewer.classList.remove("dragging");
+                    if (event.type === "pointerup" && event.pointerType === "touch" && tap && !tap.moved && Date.now() - tap.t < 300) {
+                        if (Date.now() - lastTouchTap < 350) {    // second quick tap = zoom in there
+                            lastTouchTap = 0;
+                            lastDouble = Date.now();
+                            const box = viewer.getBoundingClientRect();
+                            zoomAt(2, event.clientX - box.left, event.clientY - box.top);
+                        } else {
+                            lastTouchTap = Date.now();
+                        }
+                    }
+                    tap = null;
+                }
+            };
+            viewer.addEventListener("pointerup", endPointer);
+            viewer.addEventListener("pointercancel", endPointer);
 
             viewer.addEventListener("dblclick", event => {
+                if (Date.now() - lastDouble < 600) return;        // a touch double tap was already handled above
                 const box = viewer.getBoundingClientRect();
                 zoomAt(2, event.clientX - box.left, event.clientY - box.top);
             });
@@ -547,13 +803,21 @@
             $("zoom-in").addEventListener("click", () => zoomFromCentre(1.3));
             $("zoom-out").addEventListener("click", () => zoomFromCentre(1 / 1.3));
             $("zoom-fit").addEventListener("click", fitToWindow);
+            /* iPhones can't show one element full screen, so the button is hidden there. */
+            if (!viewer.requestFullscreen && !viewer.webkitRequestFullscreen) $("fullscreen").hidden = true;
             $("fullscreen").addEventListener("click", () => {
                 if (document.fullscreenElement) document.exitFullscreen();
-                else viewer.requestFullscreen?.();
+                else (viewer.requestFullscreen || viewer.webkitRequestFullscreen).call(viewer);
             });
 
             document.addEventListener("fullscreenchange", () => setTimeout(fitToWindow, 100));
-            addEventListener("resize", fitToWindow);
+            /* Phones fire "resize" whenever the address bar slides away: refit only when the width really changes (rotation). */
+            let lastWidth = innerWidth;
+            addEventListener("resize", () => {
+                if (innerWidth === lastWidth) return;
+                lastWidth = innerWidth;
+                fitToWindow();
+            });
         }
 
 
@@ -567,8 +831,17 @@
 
             $("map-picker").addEventListener("click", event => {
                 const button = event.target.closest(".map-btn");
-                if (button) selectMap(Number(button.dataset.index));
+                if (!button) return;
+                selectMap(Number(button.dataset.index));
+                if (matchMedia("(max-width: 700px)").matches) {            // phone: jump down to the map
+                    $("viewer").scrollIntoView({ behavior: "smooth", block: "center" });
+                }
             });
+
+            $("prev-map").addEventListener("click", () =>
+                selectMap(currentIndex < 0 ? MAPS.length - 1 : (currentIndex - 1 + MAPS.length) % MAPS.length));
+            $("next-map").addEventListener("click", () =>
+                selectMap(currentIndex < 0 ? 0 : (currentIndex + 1) % MAPS.length));
 
             document.addEventListener("keydown", event => {
                 if (event.ctrlKey || event.metaKey || event.altKey) return;

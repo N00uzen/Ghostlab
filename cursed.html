@@ -3,19 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <script>
-        /* First visit in this tab: play intro.html, which always continues to index.html when it is done.
-           intro.html sets "gl-intro-seen" right before it leaves, so this never loops. */
-        (function () {
-            try {
-                if (sessionStorage.getItem("gl-intro-seen")) return;           // intro already played in this tab
-                sessionStorage.setItem("gl-storage-test", "1");                // if storage is blocked this throws -> no redirect (no loop)
-                sessionStorage.removeItem("gl-storage-test");
-                document.documentElement.style.visibility = "hidden";          // no flash of the page before the redirect
-                location.replace("intro.html");
-            } catch (error) { /* storage blocked: just show the page */ }
-        })();
-    </script>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            /* First visit in this tab: play intro.html, which always continues to index.html when it is done.
+               intro.html sets "gl-intro-seen" right before it leaves, so this never loops. */
+            (function () {
+                try {
+                    if (sessionStorage.getItem("gl-intro-seen")) return;           // intro already played in this tab
+                    sessionStorage.setItem("gl-storage-test", "1");                // if storage is blocked this throws -> no redirect (no loop)
+                    sessionStorage.removeItem("gl-storage-test");
+                    document.documentElement.style.visibility = "hidden";          // no flash of the page before the redirect
+                    location.replace("intro.html");
+                } catch (error) { /* storage blocked: just show the page */ }
+            })();
+        </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>GHOSTLAB // PRZEKLĘTE PRZEDMIOTY</title>
     <link rel="icon" type="image/x-icon" href="./icons/ghostlab.ico">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
@@ -202,13 +202,30 @@
 
         .cursed-card {
             --accent: var(--neon-blue);
+            display: flex;
+            flex-direction: column;
+            max-height: 620px; /* change this to make all cards taller/shorter */
             padding: 22px;
             background: rgba(2, 12, 18, 0.82);
             border: 1px solid rgba(0, 229, 255, 0.3);
             border-left: 4px solid var(--accent);
         }
 
+        /* Scrollable part of the card (header above it stays pinned) */
+        .c-body {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            scrollbar-width: none; /* hide scrollbar (Firefox) */
+            -ms-overflow-style: none;
+        }
+
+        .c-body::-webkit-scrollbar {
+            display: none; /* hide scrollbar (Chrome, Edge, Safari) */
+        }
+
         .cursed-card header {
+            flex: none;
             display: flex;
             align-items: center;
             gap: 14px;
@@ -310,6 +327,181 @@
         @media (max-width: 700px) {
             .page {
                 padding: 80px 14px 60px;
+            }
+
+            .cursed-card {
+                max-height: 80vh;
+            }
+        }
+    </style>
+    <style id="mobile-style">
+        /* ======== MOBILE SUPPORT ======== */
+        html {
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+        }
+
+        a, button, input, select, textarea, label {
+            touch-action: manipulation;          /* no 300 ms tap delay, no double-tap zoom on buttons */
+        }
+
+        @media (hover: none), (max-width: 900px) {
+            body {
+                background-attachment: scroll;   /* "fixed" backgrounds are jerky or ignored on phones */
+            }
+        }
+
+        @media (max-width: 700px) {
+            .page {
+                padding: 74px max(14px, env(safe-area-inset-right)) calc(52px + env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
+            }
+
+            /* the back button scrolls away with the page instead of covering the text */
+            .back-link {
+                position: absolute;
+                top: max(12px, env(safe-area-inset-top));
+                left: max(12px, env(safe-area-inset-left));
+                padding: 10px 14px;
+                font-size: 0.72rem;
+                letter-spacing: 0.06em;
+            }
+
+            .hero {
+                margin-bottom: 22px;
+            }
+
+            .eyebrow {
+                font-size: 0.66rem;
+                letter-spacing: 0.12em;
+                line-height: 1.6;
+            }
+
+            .hero h1 {
+                font-size: clamp(1.7rem, 8.6vw, 2.6rem);
+                letter-spacing: 0.05em;
+                overflow-wrap: anywhere;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            .jump {
+                gap: 8px;
+                margin-bottom: 20px;
+            }
+
+            .jump a,
+            .filters button {
+                padding: 11px 12px;
+                min-height: 42px;
+                display: inline-flex;
+                align-items: center;
+            }
+
+            .cursed-panel {
+                padding: 16px;
+                margin-bottom: 20px;
+            }
+
+            .cursed-panel h2 {
+                font-size: 1rem;
+            }
+
+            .cursed-grid {
+                gap: 18px;
+            }
+
+            .cursed-card {
+                padding: 16px;
+                max-height: min(620px, 82vh);
+                max-height: min(620px, 82dvh);
+            }
+
+            .cursed-card header {
+                gap: 10px;
+                min-width: 0;
+            }
+
+            .c-icon {
+                flex: none;
+                width: 42px;
+                height: 42px;
+                font-size: 1.3rem;
+            }
+
+            .cursed-card h3 {
+                font-size: 1.05rem;
+                overflow-wrap: anywhere;
+            }
+
+            .c-tagline {
+                font-size: 0.68rem;
+                letter-spacing: 0.06em;
+            }
+
+            .c-table {
+                font-size: 0.88rem;
+            }
+
+            .c-table td {
+                overflow-wrap: anywhere;
+            }
+
+            /* scrollable cards: fade the bottom edge so it is clear there is more to swipe */
+            .c-body {
+                padding-bottom: 28px;
+                -webkit-mask-image: linear-gradient(#000 calc(100% - 28px), transparent);
+                mask-image: linear-gradient(#000 calc(100% - 28px), transparent);
+            }
+
+            .cursed-panel .g-list {
+                margin-left: 0;
+                padding-left: 0;
+            }
+
+            .g-list {
+                columns: 1;
+            }
+
+            .g-search {
+                font-size: 16px;                 /* below 16 px iOS zooms the page when you tap the field */
+            }
+        }
+
+        /* narrow phones: tables become stacked rows so the text is not squeezed into columns */
+        @media (max-width: 560px) {
+            .c-table,
+            .c-table tbody,
+            .c-table tr,
+            .c-table td {
+                display: block;
+                width: 100%;
+            }
+
+            .c-table tr {
+                padding: 7px 0;
+                border-bottom: 1px solid rgba(0, 229, 255, 0.15);
+            }
+
+            .c-table td,
+            .c-table td:first-child {
+                width: 100%;
+                padding: 2px 0;
+                border: 0;
+            }
+        }
+
+        /* phones held sideways: let the cards grow instead of scrolling inside a tiny box */
+        @media (max-height: 520px) and (orientation: landscape) {
+            .cursed-card {
+                max-height: none;
+            }
+
+            .c-body {
+                padding-bottom: 0;
+                -webkit-mask-image: none;
+                mask-image: none;
             }
         }
     </style>
@@ -509,12 +701,14 @@
                             <span class="c-icon">${item.icon}</span>
                             <div><h3>${item.name}</h3><div class="c-tagline">${item.tagline}</div></div>
                         </header>
+                        <div class="c-body">
                         <p class="c-what">${item.what}</p>
                         <div class="c-cost"><label>KOSZT SANITY</label>${item.cost}</div>
                         <h4>JAK UŻYWAĆ</h4>${list(item.use)}
                         <h4 class="danger">KIEDY ZACZYNA SIĘ CURSED HUNT</h4>${list(item.hunt)}
                         ${item.table ? `<h4>${item.name === "TAROT CARDS" ? "WSZYSTKIE KARTY" : "WSZYSTKIE ŻYCZENIA"}</h4>${table(item.table)}` : ""}
                         <div class="c-tip">💡 ${item.tip}</div>
+                        </div>
                     </article>`;
             }
 

@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <script>
+            /* First visit in this tab: play intro.html, which always continues to index.html when it is done.
+               intro.html sets "gl-intro-seen" right before it leaves, so this never loops. */
+            (function () {
+                try {
+                    if (sessionStorage.getItem("gl-intro-seen")) return;           // intro already played in this tab
+                    sessionStorage.setItem("gl-storage-test", "1");                // if storage is blocked this throws -> no redirect (no loop)
+                    sessionStorage.removeItem("gl-storage-test");
+                    document.documentElement.style.visibility = "hidden";          // no flash of the page before the redirect
+                    location.replace("intro.html");
+                } catch (error) { /* storage blocked: just show the page */ }
+            })();
+        </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>GHOSTLAB // MEDIA</title>
+    <link rel="icon" type="image/x-icon" href="./icons/ghostlab.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+    <style>
+        /* ======== DESIGN TOKENS ======== */
+        :root {
+            --neon-blue: #00e5ff;
+            --mag: #ff2bd6;
+            --yel: #f9f002;
+            --ice-white: #d7f8ff;
+            --border-glow: rgba(0, 229, 255, 0.35);
+            --cut-s: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+        }
+
+        /* ======== BASE ======== */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            min-height: 100vh;
+            background-color: #02070c;
+            background-image:
+                radial-gradient(ellipse at 50% -15%, rgba(0, 229, 255, 0.22), transparent 55%),
+                radial-gradient(circle at 100% 100%, rgba(255, 43, 214, 0.16), transparent 45%),
+                linear-gradient(rgba(0, 229, 255, 0.06) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 229, 255, 0.06) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 48px 48px, 48px 48px;
+            background-attachment: fixed;
+            color: var(--ice-white);
+            font: 500 1.05rem 'Rajdhani', sans-serif;
+        }
+
+        /* scanlines */
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            z-index: 5;
+            pointer-events: none;
+            background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.22) 0 1px, transparent 1px 3px);
+            mix-blend-mode: multiply;
+        }
+
+        /* ======== LAYOUT ======== */
+        .page {
+            position: relative;
+            max-width: 1500px;
+            margin: 0 auto;
+            padding: 90px 32px 80px;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 22px;
+            left: 22px;
+            z-index: 10;
+            padding: 12px 18px;
+            background: var(--neon-blue);
+            color: #02070c;
+            text-decoration: none;
+            font: 700 0.8rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.1em;
+            clip-path: var(--cut-s);
+            transition: 0.2s;
+        }
+
+        .back-link:hover {
+            background: #fff;
+        }
+
+        .hero {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .hero::after {
+            content: '';
+            display: block;
+            height: 2px;
+            width: min(420px, 70%);
+            margin: 24px auto 0;
+            background: linear-gradient(90deg, transparent, var(--neon-blue), var(--mag), transparent);
+        }
+
+        .eyebrow {
+            font: 0.8rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.3em;
+            color: var(--neon-blue);
+        }
+
+        .hero h1 {
+            margin: 14px 0;
+            font: 900 clamp(2rem, 6.5vw, 4.2rem) 'Orbitron', sans-serif;
+            letter-spacing: 0.08em;
+            line-height: 1.15;
+            color: #fff;
+            text-shadow: 4px 0 var(--mag), -4px 0 var(--neon-blue), 0 0 40px rgba(0, 229, 255, 0.5);
+        }
+
+        .hero p {
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.5;
+            font-size: 1.15rem;
+            color: #9fd3de;
+        }
+
+        /* quick jump bar */
+        .jump {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 28px;
+        }
+
+        .jump a {
+            padding: 9px 14px;
+            border: 1px solid var(--border-glow);
+            color: var(--ice-white);
+            text-decoration: none;
+            font: 700 0.76rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.06em;
+            clip-path: var(--cut-s);
+            transition: 0.2s;
+        }
+
+        .jump a:hover {
+            background: var(--neon-blue);
+            border-color: var(--neon-blue);
+            color: #02070c;
+        }
+
+        .cursed-card {
+            scroll-margin-top: 20px;
+        }
+
+        /* ======== CURSED ITEMS GUIDE ======== */
+        .cursed-panel {
+            margin-bottom: 28px;
+            padding: 22px;
+            background: rgba(2, 12, 18, 0.78);
+            border: 1px solid rgba(0, 229, 255, 0.35);
+            border-left: 4px solid var(--neon-blue);
+        }
+
+        .cursed-panel h2 {
+            margin-bottom: 14px;
+            font: 900 1.15rem 'Orbitron', sans-serif;
+            letter-spacing: 0.08em;
+            color: #fff;
+        }
+
+        .cursed-panel ul,
+        .cursed-card ul {
+            margin: 0 0 4px 18px;
+            line-height: 1.5;
+            color: #c4e6ee;
+        }
+
+        .cursed-panel li,
+        .cursed-card li {
+            margin-bottom: 5px;
+        }
+
+        .cursed-panel b,
+        .cursed-card b {
+            color: var(--neon-blue);
+        }
+
+        .cursed-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(min(100%, 430px), 1fr));
+            gap: 26px;
+        }
+
+        .cursed-card {
+            --accent: var(--neon-blue);
+            display: flex;
+            flex-direction: column;
+            max-height: 620px; /* change this to make all cards taller/shorter */
+            padding: 22px;
+            background: rgba(2, 12, 18, 0.82);
+            border: 1px solid rgba(0, 229, 255, 0.3);
+            border-left: 4px solid var(--accent);
+        }
+
+        /* Scrollable part of the card (header above it stays pinned) */
+        .c-body {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            scrollbar-width: none; /* hide scrollbar (Firefox) */
+            -ms-overflow-style: none;
+        }
+
+        .c-body::-webkit-scrollbar {
+            display: none; /* hide scrollbar (Chrome, Edge, Safari) */
+        }
+
+        .cursed-card header {
+            flex: none;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 12px;
+        }
+
+        .c-icon {
+            display: grid;
+            place-items: center;
+            width: 50px;
+            height: 50px;
+            font-size: 1.6rem;
+            border: 1px solid var(--accent);
+            box-shadow: 0 0 16px color-mix(in srgb, var(--accent) 40%, transparent);
+        }
+
+        .cursed-card h3 {
+            font: 900 1.2rem 'Orbitron', sans-serif;
+            letter-spacing: 0.06em;
+            color: #fff;
+            text-shadow: 2px 0 var(--accent);
+        }
+
+        .c-tagline {
+            font: 0.78rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.1em;
+            color: var(--accent);
+        }
+
+        .c-what {
+            margin-bottom: 12px;
+            line-height: 1.5;
+            color: #e3f6fb;
+        }
+
+        .c-cost {
+            margin-bottom: 14px;
+            padding: 9px 12px;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px dashed var(--accent);
+            font-size: 0.95rem;
+        }
+
+        .c-cost label,
+        .cursed-card h4 {
+            display: block;
+            margin: 14px 0 6px;
+            font: 0.72rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.18em;
+            color: var(--accent);
+        }
+
+        .c-cost label {
+            margin: 0 0 3px;
+        }
+
+        .cursed-card h4.danger {
+            color: #ff4d6d;
+        }
+
+        .c-tip {
+            margin-top: 14px;
+            padding: 10px 12px;
+            background: rgba(249, 240, 2, 0.07);
+            border-left: 3px solid var(--yel);
+            line-height: 1.45;
+            color: #f5f3b0;
+        }
+
+        .c-table {
+            width: 100%;
+            margin-top: 6px;
+            border-collapse: collapse;
+            font-size: 0.92rem;
+            line-height: 1.4;
+        }
+
+        .c-table td {
+            padding: 6px 8px;
+            border-bottom: 1px solid rgba(0, 229, 255, 0.15);
+            vertical-align: top;
+            color: #c4e6ee;
+        }
+
+        .c-table td:first-child {
+            width: 34%;
+            font-weight: 700;
+            color: var(--accent, var(--neon-blue));
+        }
+
+        .cursed-note {
+            margin-top: 26px;
+            font: 0.75rem 'Share Tech Mono', monospace;
+            line-height: 1.6;
+            color: #5f97a4;
+        }
+    
+
+        @media (max-width: 700px) {
+            .page {
+                padding: 80px 14px 60px;
+            }
+
+            .cursed-card {
+                max-height: 80vh;
+            }
+        }
+    </style>
+    <style id="media-style">
+        /* ======== MEDIA / PAYOUTS PAGE ======== */
+        .m-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 16px;
+            margin-bottom: 26px;
+        }
+
+        .m-stat {
+            padding: 16px 18px;
+            background: rgba(2, 12, 18, 0.78);
+            border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+            border-left: 4px solid var(--accent);
+        }
+
+        .m-stat .m-label {
+            font: 900 0.95rem 'Orbitron', sans-serif;
+            letter-spacing: 0.08em;
+            color: #fff;
+            text-shadow: 2px 0 var(--accent);
+        }
+
+        .m-stat .m-big {
+            margin: 8px 0 2px;
+            font: 900 2rem 'Orbitron', sans-serif;
+            color: var(--accent);
+        }
+
+        .m-stat .m-sub {
+            font: 0.8rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.04em;
+            color: #7fb4c0;
+        }
+
+        .m-stat a {
+            display: inline-block;
+            margin-top: 8px;
+            font: 700 0.76rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.06em;
+            color: var(--accent);
+            text-decoration: underline dotted;
+            text-underline-offset: 3px;
+        }
+
+        .m-tips ul {
+            margin: 0 0 4px 22px;
+            line-height: 1.5;
+            color: #c4e6ee;
+        }
+
+        .m-tips li {
+            margin-bottom: 7px;
+        }
+
+        .m-tips b {
+            color: var(--neon-blue);
+        }
+
+        .m-tools {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .m-search {
+            flex: 1 1 100%;
+            width: min(560px, 100%);
+            max-width: 560px;
+            padding: 13px 16px;
+            background: rgba(2, 12, 18, 0.85);
+            border: 1px solid var(--border-glow);
+            color: var(--ice-white);
+            font: 500 1rem 'Share Tech Mono', monospace;
+            outline: none;
+            clip-path: var(--cut-s);
+        }
+
+        .m-search:focus {
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 16px rgba(0, 229, 255, 0.35);
+        }
+
+        .m-sort {
+            font: 0.75rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.1em;
+            color: #7fb4c0;
+        }
+
+        .m-sort button {
+            padding: 9px 14px;
+            border: 1px solid var(--border-glow);
+            background: transparent;
+            color: var(--ice-white);
+            cursor: pointer;
+            font: 700 0.76rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.06em;
+            clip-path: var(--cut-s);
+            transition: 0.2s;
+        }
+
+        .m-sort button:hover,
+        .m-sort button.active {
+            background: var(--neon-blue);
+            border-color: var(--neon-blue);
+            color: #02070c;
+        }
+
+        .jump a.m-chip {
+            background: color-mix(in srgb, var(--accent) 22%, transparent);
+            border: 1px solid var(--accent);
+            color: var(--accent);
+        }
+
+        .jump a.m-chip:hover {
+            background: var(--accent);
+            color: #02070c;
+        }
+
+        .m-panel {
+            border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+            border-left: 4px solid var(--accent);
+            scroll-margin-top: 20px;
+        }
+
+        .m-panel h2 {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: baseline;
+            gap: 4px 14px;
+            text-shadow: 2px 0 var(--accent);
+        }
+
+        .m-panel h2 .m-tool {
+            font: 0.75rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.08em;
+            color: var(--accent);
+            text-shadow: none;
+        }
+
+        .m-head,
+        .m-row {
+            display: grid;
+            grid-template-columns: 1fr 84px 84px;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .m-head {
+            padding-bottom: 8px;
+            border-bottom: 1px dashed color-mix(in srgb, var(--accent) 45%, transparent);
+            font: 0.7rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.14em;
+            color: var(--accent);
+        }
+
+        .m-head span:not(:first-child),
+        .m-price {
+            text-align: center;
+        }
+
+        .m-row {
+            padding: 9px 4px;
+            border-bottom: 1px solid rgba(0, 229, 255, 0.12);
+            transition: background 0.15s;
+        }
+
+        .m-row:hover {
+            background: color-mix(in srgb, var(--accent) 9%, transparent);
+        }
+
+        .m-act b {
+            display: block;
+            font-weight: 700;
+            color: #e8f7fb;
+            overflow-wrap: anywhere;
+        }
+
+        .m-act small {
+            display: block;
+            font: 0.74rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.02em;
+            color: #7fb4c0;
+            overflow-wrap: anywhere;
+        }
+
+        .m-act .m-name {
+            display: inline-block;
+            margin-top: 3px;
+            font: 0.74rem 'Share Tech Mono', monospace;
+            color: var(--accent);
+        }
+
+        .m-price {
+            font: 900 1.05rem 'Orbitron', sans-serif;
+            color: #9fd3de;
+        }
+
+        .m-price.dup {
+            font-size: 0.9rem;
+            font-weight: 700;
+        }
+
+        .m-price.none {
+            color: #4d7480;
+            font-weight: 500;
+        }
+
+        .m-price.t20 { color: #ff4d6d; }
+        .m-price.t15 { color: #f9f002; }
+        .m-price.t10 { color: #39ff88; }
+        .m-price.t5  { color: #c4e6ee; }
+
+        .m-empty {
+            display: none;
+            padding: 26px;
+            text-align: center;
+            font: 0.9rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.08em;
+            color: #5f97a4;
+        }
+
+        @media (max-width: 700px) {
+            .m-head,
+            .m-row {
+                grid-template-columns: 1fr 58px 58px;
+                gap: 6px;
+            }
+
+            .m-head {
+                font-size: 0.62rem;
+                letter-spacing: 0.06em;
+            }
+
+            .m-price {
+                font-size: 0.92rem;
+            }
+
+            .m-price.dup {
+                font-size: 0.82rem;
+            }
+
+            .m-search {
+                font-size: 16px;                 /* below 16 px iOS zooms the page when you tap the field */
+            }
+
+            .m-sort button {
+                padding: 11px 12px;
+                min-height: 42px;
+            }
+
+            .m-tips ul {
+                margin-left: 18px;
+            }
+        }
+    </style>
+    <style id="mobile-style">
+        /* ======== MOBILE SUPPORT ======== */
+        html {
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+        }
+
+        a, button, input, select, textarea, label {
+            touch-action: manipulation;          /* no 300 ms tap delay, no double-tap zoom on buttons */
+        }
+
+        @media (hover: none), (max-width: 900px) {
+            body {
+                background-attachment: scroll;   /* "fixed" backgrounds are jerky or ignored on phones */
+            }
+        }
+
+        @media (max-width: 700px) {
+            .page {
+                padding: 74px max(14px, env(safe-area-inset-right)) calc(52px + env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
+            }
+
+            /* the back button scrolls away with the page instead of covering the text */
+            .back-link {
+                position: absolute;
+                top: max(12px, env(safe-area-inset-top));
+                left: max(12px, env(safe-area-inset-left));
+                padding: 10px 14px;
+                font-size: 0.72rem;
+                letter-spacing: 0.06em;
+            }
+
+            .hero {
+                margin-bottom: 22px;
+            }
+
+            .eyebrow {
+                font-size: 0.66rem;
+                letter-spacing: 0.12em;
+                line-height: 1.6;
+            }
+
+            .hero h1 {
+                font-size: clamp(1.7rem, 8.6vw, 2.6rem);
+                letter-spacing: 0.05em;
+                overflow-wrap: anywhere;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            .jump {
+                gap: 8px;
+                margin-bottom: 20px;
+            }
+
+            .jump a,
+            .filters button {
+                padding: 11px 12px;
+                min-height: 42px;
+                display: inline-flex;
+                align-items: center;
+            }
+
+            .cursed-panel {
+                padding: 16px;
+                margin-bottom: 20px;
+            }
+
+            .cursed-panel h2 {
+                font-size: 1rem;
+            }
+
+            .cursed-grid {
+                gap: 18px;
+            }
+
+            .cursed-card {
+                padding: 16px;
+                max-height: min(620px, 82vh);
+                max-height: min(620px, 82dvh);
+            }
+
+            .cursed-card header {
+                gap: 10px;
+                min-width: 0;
+            }
+
+            .c-icon {
+                flex: none;
+                width: 42px;
+                height: 42px;
+                font-size: 1.3rem;
+            }
+
+            .cursed-card h3 {
+                font-size: 1.05rem;
+                overflow-wrap: anywhere;
+            }
+
+            .c-tagline {
+                font-size: 0.68rem;
+                letter-spacing: 0.06em;
+            }
+
+            .c-table {
+                font-size: 0.88rem;
+            }
+
+            .c-table td {
+                overflow-wrap: anywhere;
+            }
+
+            /* scrollable cards: fade the bottom edge so it is clear there is more to swipe */
+            .c-body {
+                padding-bottom: 28px;
+                -webkit-mask-image: linear-gradient(#000 calc(100% - 28px), transparent);
+                mask-image: linear-gradient(#000 calc(100% - 28px), transparent);
+            }
+
+            .cursed-panel .g-list {
+                margin-left: 0;
+                padding-left: 0;
+            }
+
+            .g-list {
+                columns: 1;
+            }
+
+            .g-search {
+                font-size: 16px;                 /* below 16 px iOS zooms the page when you tap the field */
+            }
+        }
+
+        /* narrow phones: tables become stacked rows so the text is not squeezed into columns */
+        @media (max-width: 560px) {
+            .c-table,
+            .c-table tbody,
+            .c-table tr,
+            .c-table td {
+                display: block;
+                width: 100%;
+            }
+
+            .c-table tr {
+                padding: 7px 0;
+                border-bottom: 1px solid rgba(0, 229, 255, 0.15);
+            }
+
+            .c-table td,
+            .c-table td:first-child {
+                width: 100%;
+                padding: 2px 0;
+                border: 0;
+            }
+        }
+
+        /* phones held sideways: let the cards grow instead of scrolling inside a tiny box */
+        @media (max-height: 520px) and (orientation: landscape) {
+            .cursed-card {
+                max-height: none;
+            }
+
+            .c-body {
+                padding-bottom: 0;
+                -webkit-mask-image: none;
+                mask-image: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- If you rename the main page, change this link -->
+    <a class="back-link" href="index.html">← POWRÓT DO GHOSTLAB</a>
+
+    <main class="page">
+        <header class="hero">
+            <div class="eyebrow">[ MEDIA ARCHIVE // PAYOUT TABLES ]</div>
+            <h1>MEDIA</h1>
+            <p>Co możesz sfotografować, nagrać na wideo i zarejestrować dźwiękiem, oraz ile płacą unikaty i duplikaty.</p>
+        </header>
+
+        <div id="media-root"></div>
+    </main>
+
+    <script>
+        "use strict";
+
+        /* ==========================================================================
+           MEDIA PAYOUTS
+           Row format: [ "Polish name", "English name (as in the game)", "name shown in the game", unique $, duplicate $ ]
+           A duplicate of null means the game shows "-" (no payout for a duplicate).
+           To fix or add a payout, edit the lists below - the page builds itself from them.
+           ========================================================================== */
+        (function () {
+            "use strict";
+
+            const SECTIONS = [
+                {
+                    id: "zdjecia", title: "ZDJĘCIA", icon: "📷", tool: "Photo Camera", slug: "photo-camera", color: "#00e5ff",
+                    rows: [
+                        ["Duch (pełna forma)", "Ghost (Full Form)", "Ghost", 15, 3],
+                        ["Mgła ducha", "Ghost Mist", "Mist Form", 15, null],
+                        ["Cień ducha", "Shadow Ghost", "Shadow Ghost", 15, 3],
+                        ["Półprzezroczysty duch", "Translucent Ghost", "Translucent Ghost", 15, 3],
+                        ["Duch w D.O.T.S.", "DOTS Ghost", "D.O.T.S Ghost", 10, 2],
+                        ["Spalony / użyty krucyfiks", "Burned / Used Crucifix", "Burned Crucifix", 10, 2],
+                        ["Odczyt EMF 5", "EMF 5 Reading", "EMF Level 5", 10, null],
+                        ["Odczyt ujemnej temperatury", "Freezing Temp. Reading", "Freezing Temperatures", 10, null],
+                        ["Pismo ducha w zeszycie", "Ghost Writing in Book", "Ghost Writing", 10, 2],
+                        ["Odciski palców Obake", "Obake Fingerprints", "Obake Fingerprint", 10, 2],
+                        ["Kość", "Bone", "Bone", 5, null],
+                        ["Zwłoki", "Dead Body", "Dead Body", 5, 1],
+                        ["Brudna woda", "Dirty Water", "Dirty Water", 5, 1],
+                        ["Odczyt EMF", "EMF Reading", "EMF Reading", 5, null],
+                        ["Odciski palców UV", "UV Fingerprint", "Fingerprints", 5, 1],
+                        ["Ślady stóp UV", "UV Footprints", "Footprints", 5, 1],
+                        ["Lewitujący przedmiot", "Object levitating", "Interaction", 5, 1],
+                        ["Nawiedzone lustro", "Haunted Mirror", "Haunted Mirror", 5, null],
+                        ["Łapka małpy", "Monkey Paw", "Monkey Paw", 5, null],
+                        ["Pozytywka", "Music Box", "Music Box", 5, null],
+                        ["Tablica Ouija", "Ouija Board", "Ouija Board", 5, null],
+                        ["Krąg przywołania", "Summoning Circle", "Summoning Circle", 5, null],
+                        ["Karty tarota", "Tarot Cards", "Tarot Cards", 5, null],
+                        ["Lalka voodoo", "Voodoo Doll", "Voodoo Doll", 5, null]
+                    ]
+                },
+                {
+                    id: "wideo", title: "WIDEO", icon: "📹", tool: "Video Camera", slug: "video-camera", color: "#b388ff",
+                    rows: [
+                        ["Zmiana kształtu Obake podczas polowania", "Obake shapeshift during hunt", "Ghost Shapeshift", 20, 5],
+                        ["Duch podczas polowania", "Ghost during a hunt", "Hunting Ghost", 20, 5],
+                        ["Duch (pełna forma)", "Ghost (Full form)", "Ghost", 15, 3],
+                        ["Kula mgły / forma mgły", "Airball / Mist Form", "Mist Form", 15, null],
+                        ["Cień ducha", "Shadow Ghost", "Shadow Ghost", 15, 3],
+                        ["Półprzezroczysty duch", "Translucent Ghost", "Translucent Ghost", 15, 3],
+                        ["Duch w D.O.T.S.", "DOTS Ghost", "D.O.T.S. Ghost", 10, 2],
+                        ["Palący się krucyfiks (animacja)", "Crucifix burning (animation)", "Burned Crucifix", 10, 2],
+                        ["Sól, przez którą ktoś przeszedł", "Salt being walked through / disturbed", "Disturbed Salt", 10, 2],
+                        ["Kule duchów", "Ghost Orbs", "Ghost Orbs", 10, null],
+                        ["Pismo ducha", "Ghost Writing", "Ghost Writing", 10, 2],
+                        ["Rozbijające się światła", "Lights shattering", "Light exploded", 10, 2],
+                        ["Migające światła", "Lights flickering", "Light Flickering", 10, 2],
+                        ["Krucyfiks z Sunny Meadows (easter egg)", "Sunny Meadows' crucifix easter egg", "Chapel Crucifix", 5, 1],
+                        ["Gracz zabity przez ducha", "Player being killed by the ghost", "Dead Body", 5, 1],
+                        ["Duch włącza / wyłącza radio", "Ghost turning on / off radio", "Distorted Music", 5, 1],
+                        ["Poruszone drzwi", "Door Moving", "Door Moved", 5, 1],
+                        ["Duch gasi płomień", "Ghost blowing out a flame", "Fire Extinguish", 5, 1],
+                        ["Duch zapala płomień", "Ghost lighting a flame", "Fire Interaction", 5, 1],
+                        ["Zlew napełnia się brudną wodą", "Sink filling with dirty water", "Interaction", 5, 1],
+                        ["Włączony prysznic", "Shower turned on", "Interaction", 5, 1],
+                        ["Duch dzwoni telefonem", "Ghost ringing phone", "Interaction", 5, 1],
+                        ["Przełączony włącznik światła", "Light switch switched", "Lights Switched", 5, 1],
+                        ["Kliknięty pilot do TV", "TV Remote clicked", "Lights Switched", 5, 1],
+                        ["Naciśnięta klawiatura", "Keyboard pressed", "Lights Switched", 5, 1],
+                        ["Duch przechodzi przez czujnik ruchu", "Ghost walking through motion sensor", "Motion Sensed", 5, 1],
+                        ["Poruszony przedmiot", "Object moved", "Object Thrown", 5, 1],
+                        ["Odpowiedź tablicy Ouija", "Ouija Board response", "Ouija Board", 5, 1],
+                        ["Duch porusza fotel bujany", "Ghost moving rocking chair", "Rocking Chair", 5, 1],
+                        ["Obrót krucyfiksu na ścianie", "Rotating a crucifix on the wall", "Wall Crucifix", 5, 1]
+                    ]
+                },
+                {
+                    id: "dzwiek", title: "DŹWIĘK", icon: "🎙️", tool: "Sound Recorder", slug: "sound-recorder", color: "#ff9f1c",
+                    rows: [
+                        ["Duch podczas polowania", "Ghost during a hunt", "Hunting Ghost", 20, 5],
+                        ["Wydarzenie duchowe", "Ghost event", "Ghost Event", 15, 3],
+                        ["Mgła / kula ducha", "Airball / Ghost Mist", "Mist Form", 15, 3],
+                        ["Palący się krucyfiks", "Burning crucifix", "Burned Crucifix", 10, 2],
+                        ["EMF 5", "EMF 5", "EMF 5 Reading", 10, 2],
+                        ["Pisanie ducha", "Ghost writing", "Ghost Writing", 10, 2],
+                        ["Oddech Deogena przez Spirit Box", "Deogen breathing through spirit box", "Paranormal Breathing", 10, 2],
+                        ["Wycie Banshee", "Banshee wail", "Paranormal Scream", 10, 2],
+                        ["Odpowiedź Spirit Box", "Spirit Box response", "Spirit Box Response", 10, 2],
+                        ["Duch gasi płomień", "Ghost blowing out a flame", "Fire Extinguish", 5, 1],
+                        ["Pozytywka", "Music Box", "Music Box", 5, 1],
+                        ["Odpowiedź tablicy Ouija", "Ouija Board response", "Ouija Board", 5, 1],
+                        ["Paranormalne jęki", "Paranormal groaning", "Paranormal Groaning", 5, 1],
+                        ["Paranormalny śmiech", "Paranormal laughing", "Paranormal Laughing", 5, 1],
+                        ["Paranormalne mówienie", "Paranormal talking", "Paranormal Talking", 5, 1],
+                        ["Paranormalny szept", "Paranormal whisper", "Paranormal Whisper", 5, 1],
+                        ["Chichot pluszowego misia", "Teddy Bear 'giggle'", "Possessed Toy", 5, 1]
+                    ]
+                }
+            ];
+
+            const TIPS = [
+                "<b>Unikat</b> to pierwsze takie ujęcie, nagranie lub dźwięk, a <b>duplikat</b> to kolejne takie samo. Kreska (–) oznacza brak wypłaty za duplikat.",
+                "Kilka akcji ma tę samą <b>nazwę w grze</b> (np. „Interaction”, „Lights Switched”), więc prawdopodobnie liczą się jako ten sam typ i kolejna z taką nazwą płaci jak duplikat.",
+                "Najwięcej płaci <b>polowanie</b>: 20 $ za unikat na wideo i w dźwięku (duplikat 5 $).",
+                "Duch w pełnej formie, w mgle, cień i duch półprzezroczysty płacą po <b>15 $</b> na zdjęciu i na wideo.",
+                "Zdjęcia dowodów (EMF 5, temperatura ujemna, Ghost Writing, D.O.T.S.) płacą po 10 $, ale odciski i ślady UV tylko 5 $.",
+                "Przeklęte przedmioty (Haunted Mirror, Monkey Paw, Music Box, Ouija Board, Summoning Circle, Tarot Cards, Voodoo Doll) to po <b>5 $</b> na zdjęciu, bez duplikatu."
+            ];
+
+            const state = { sort: "price", query: "" };
+            const norm = text => text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ł/g, "l");
+            const money = n => "$" + n;
+
+            function rowHtml([pl, en, name, unique, dup]) {
+                const search = norm([pl, en, name, money(unique), dup == null ? "" : money(dup)].join(" "));
+                return `<div class="m-row" data-search="${search}">
+                    <div class="m-act"><b>${pl}</b><small>${en}</small><span class="m-name">„${name}”</span></div>
+                    <div class="m-price t${unique}">${money(unique)}</div>
+                    <div class="m-price dup ${dup == null ? "none" : ""}">${dup == null ? "–" : money(dup)}</div>
+                </div>`;
+            }
+
+            function sorted(rows) {
+                const copy = rows.slice();
+                if (state.sort === "az") copy.sort((a, b) => a[0].localeCompare(b[0], "pl"));
+                return copy;                                  // "price": the lists above are already in the game's order
+            }
+
+            function panelHtml(section) {
+                const max = Math.max(...section.rows.map(row => row[3]));
+                return `<section class="cursed-panel m-panel" id="${section.id}" style="--accent:${section.color}">
+                    <h2><span>${section.icon} ${section.title}</span><span class="m-tool">${section.tool} · ${section.rows.length} wpisów</span></h2>
+                    <div class="m-head"><span>AKCJA / NAZWA W GRZE</span><span>UNIKAT</span><span>DUPLIKAT</span></div>
+                    <div class="m-rows">${sorted(section.rows).map(rowHtml).join("")}</div>
+                </section>`;
+            }
+
+            function statHtml(section) {
+                const max = Math.max(...section.rows.map(row => row[3]));
+                const best = section.rows.filter(row => row[3] === max).length;
+                return `<div class="m-stat" style="--accent:${section.color}">
+                    <div class="m-label">${section.icon} ${section.title}</div>
+                    <div class="m-big">${money(max)}</div>
+                    <div class="m-sub">najwyższy unikat · ${best} ${best === 1 ? "wpis" : "wpisy"} z ${section.rows.length}</div>
+                    <a href="equipment.html#${section.slug}">${section.tool} – zobacz sprzęt →</a>
+                </div>`;
+            }
+
+            function applyFilter() {
+                const q = norm(state.query.trim());
+                let shown = 0;
+                document.querySelectorAll(".m-panel").forEach(panel => {
+                    let any = 0;
+                    panel.querySelectorAll(".m-row").forEach(row => {
+                        const ok = !q || row.dataset.search.includes(q);
+                        row.style.display = ok ? "" : "none";
+                        if (ok) any++;
+                    });
+                    panel.style.display = any ? "" : "none";
+                    shown += any;
+                });
+                document.getElementById("m-empty").style.display = shown ? "none" : "block";
+            }
+
+            function renderTables() {
+                document.getElementById("m-tables").innerHTML = SECTIONS.map(panelHtml).join("");
+                applyFilter();
+            }
+
+            function render() {
+                document.getElementById("media-root").innerHTML = `
+                    <div class="m-stats">${SECTIONS.map(statHtml).join("")}</div>
+                    <section class="cursed-panel m-tips"><h2>WARTO WIEDZIEĆ</h2><ul>${TIPS.map(t => `<li>${t}</li>`).join("")}</ul></section>
+                    <div class="m-tools">
+                        <input class="m-search" id="m-search" type="search" placeholder="🔎 Szukaj (np. krucyfiks, ouija, hunt)..." autocomplete="off">
+                        <span class="m-sort">SORTUJ:
+                            <button class="active" data-sort="price">WG WYPŁATY</button>
+                            <button data-sort="az">A → Z</button>
+                        </span>
+                    </div>
+                    <nav class="jump">${SECTIONS.map(s => `<a class="m-chip" style="--accent:${s.color}" href="#${s.id}">${s.icon} ${s.title}</a>`).join("")}</nav>
+                    <div id="m-tables"></div>
+                    <div class="m-empty" id="m-empty">BRAK WYNIKÓW</div>
+                    <p class="cursed-note">Kwoty spisane ze zrzutów ekranu z gry (tabele dla Photo Camera, Video Camera i Sound Recorder). Mogą zmieniać się z aktualizacjami gry, więc sprawdzaj je w praktyce.</p>`;
+
+                renderTables();
+
+                document.getElementById("m-search").addEventListener("input", event => {
+                    state.query = event.target.value;
+                    applyFilter();
+                });
+                document.querySelectorAll(".m-sort button").forEach(button => {
+                    button.addEventListener("click", () => {
+                        state.sort = button.dataset.sort;
+                        document.querySelectorAll(".m-sort button").forEach(b => b.classList.toggle("active", b === button));
+                        renderTables();
+                    });
+                });
+            }
+            render();
+        })();
+    </script>
+</body>
+</html>

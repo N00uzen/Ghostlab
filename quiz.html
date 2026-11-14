@@ -1,0 +1,1680 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GHOSTLAB // QUIZ</title>
+    <link rel="icon" type="image/x-icon" href="../icons/ghostlab.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+    <style>
+        /* ======== DESIGN TOKENS ======== */
+        :root {
+            --neon-blue: #00e5ff;
+            --mag: #ff2bd6;
+            --yel: #f9f002;
+            --good: #39ff88;
+            --bad: #ff3b5c;
+            --ice-white: #d7f8ff;
+            --border-glow: rgba(0, 229, 255, 0.35);
+            --cut-s: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+            --color-emf: #ff3b5c;
+            --color-box: #4db8ff;
+            --color-dots: #00e5ff;
+            --color-uv: #c27bff;
+            --color-writing: #2dffc4;
+            --color-orbs: #ffe14d;
+            --color-freezing: #ffffff;
+        }
+
+        /* ======== BASE ======== */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        [hidden] {
+            display: none !important;
+        }
+
+        body {
+            min-height: 100vh;
+            background-color: #02070c;
+            background-image:
+                radial-gradient(ellipse at 50% -15%, rgba(0, 229, 255, 0.22), transparent 55%),
+                radial-gradient(circle at 100% 100%, rgba(255, 43, 214, 0.16), transparent 45%),
+                linear-gradient(rgba(0, 229, 255, 0.06) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 229, 255, 0.06) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 48px 48px, 48px 48px;
+            background-attachment: fixed;
+            color: var(--ice-white);
+            font: 500 1.05rem 'Rajdhani', sans-serif;
+        }
+
+        /* scanlines */
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            z-index: 5;
+            pointer-events: none;
+            background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.22) 0 1px, transparent 1px 3px);
+            mix-blend-mode: multiply;
+        }
+
+        /* ======== LAYOUT ======== */
+        .page {
+            position: relative;
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 90px 24px 80px;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 22px;
+            left: 22px;
+            z-index: 10;
+            padding: 12px 18px;
+            background: var(--neon-blue);
+            color: #02070c;
+            text-decoration: none;
+            font: 700 0.8rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.1em;
+            clip-path: var(--cut-s);
+            transition: 0.2s;
+        }
+
+        .back-link:hover {
+            background: #fff;
+        }
+
+        .hero {
+            text-align: center;
+            margin-bottom: 34px;
+        }
+
+        .hero::after {
+            content: '';
+            display: block;
+            height: 2px;
+            width: min(420px, 70%);
+            margin: 24px auto 0;
+            background: linear-gradient(90deg, transparent, var(--neon-blue), var(--mag), transparent);
+        }
+
+        .eyebrow {
+            font: 0.8rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.3em;
+            color: var(--neon-blue);
+        }
+
+        .hero h1 {
+            margin: 14px 0;
+            font: 900 clamp(2rem, 6.5vw, 4rem) 'Orbitron', sans-serif;
+            letter-spacing: 0.08em;
+            line-height: 1.15;
+            color: #fff;
+            text-shadow: 4px 0 var(--mag), -4px 0 var(--neon-blue), 0 0 40px rgba(0, 229, 255, 0.5);
+        }
+
+        .hero p {
+            max-width: 620px;
+            margin: 0 auto;
+            line-height: 1.5;
+            font-size: 1.15rem;
+            color: #9fd3de;
+        }
+
+        /* ======== SHARED PANELS & BUTTONS ======== */
+        .panel {
+            padding: 24px;
+            background: rgba(2, 12, 18, 0.8);
+            border: 1px solid var(--border-glow);
+            border-left: 4px solid var(--neon-blue);
+        }
+
+        .label {
+            font: 0.72rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.2em;
+            color: var(--mag);
+        }
+
+        .btn {
+            padding: 13px 24px;
+            background: var(--neon-blue);
+            border: 0;
+            color: #02070c;
+            cursor: pointer;
+            font: 900 0.85rem 'Orbitron', sans-serif;
+            letter-spacing: 0.12em;
+            clip-path: var(--cut-s);
+            transition: 0.2s;
+        }
+
+        .btn:hover {
+            background: #fff;
+        }
+
+        .btn.ghost {
+            background: transparent;
+            border: 1px solid var(--neon-blue);
+            color: var(--neon-blue);
+        }
+
+        .btn.ghost:hover {
+            background: rgba(0, 229, 255, 0.18);
+        }
+
+        /* ======== START SCREEN ======== */
+        .lengths {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+            margin: 6px 0 22px;
+        }
+
+        .pill {
+            padding: 9px 18px;
+            background: transparent;
+            border: 1px solid var(--border-glow);
+            color: var(--ice-white);
+            cursor: pointer;
+            font: 700 0.8rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.08em;
+            clip-path: var(--cut-s);
+            transition: 0.2s;
+        }
+
+        .pill:hover {
+            border-color: var(--neon-blue);
+            color: var(--neon-blue);
+        }
+
+        .pill.active {
+            background: var(--neon-blue);
+            border-color: var(--neon-blue);
+            color: #02070c;
+        }
+
+        .modes {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr));
+            gap: 18px;
+        }
+
+        .mode {
+            padding: 20px;
+            background: rgba(2, 12, 18, 0.85);
+            border: 1px solid var(--border-glow);
+            border-left: 4px solid var(--accent, var(--neon-blue));
+            color: var(--ice-white);
+            text-align: left;
+            cursor: pointer;
+            font: inherit;
+            transition: 0.2s;
+        }
+
+        .mode:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0 24px color-mix(in srgb, var(--accent, #00e5ff) 40%, transparent);
+        }
+
+        .mode h3 {
+            margin-bottom: 6px;
+            font: 900 1rem 'Orbitron', sans-serif;
+            letter-spacing: 0.08em;
+            color: var(--accent, var(--neon-blue));
+        }
+
+        .mode p {
+            line-height: 1.45;
+            color: #c4e6ee;
+        }
+
+        .mode small {
+            display: block;
+            margin-top: 10px;
+            font: 0.72rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.14em;
+            color: var(--yel);
+        }
+
+        /* ======== QUESTION SCREEN ======== */
+        .status {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 10px;
+            font: 0.8rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.12em;
+        }
+
+        .status b {
+            color: var(--yel);
+        }
+
+        .bar {
+            height: 6px;
+            margin-bottom: 22px;
+            background: rgba(0, 229, 255, 0.12);
+        }
+
+        .bar i {
+            display: block;
+            height: 100%;
+            width: 0;
+            background: linear-gradient(90deg, var(--mag), var(--neon-blue));
+            box-shadow: 0 0 12px var(--neon-blue);
+            transition: width 0.4s;
+        }
+
+        .question {
+            margin-bottom: 18px;
+            font: 900 clamp(1.15rem, 3.2vw, 1.55rem) 'Orbitron', sans-serif;
+            line-height: 1.35;
+            letter-spacing: 0.03em;
+            color: #fff;
+        }
+
+        .clue {
+            margin-bottom: 20px;
+            padding: 16px 18px;
+            background: rgba(255, 43, 214, 0.07);
+            border-left: 4px solid var(--mag);
+            font-size: 1.2rem;
+            line-height: 1.5;
+            color: #ffe9fb;
+        }
+
+        .options {
+            display: grid;
+            gap: 12px;
+        }
+
+        .opt {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 18px;
+            background: rgba(0, 229, 255, 0.05);
+            border: 1px solid var(--border-glow);
+            color: var(--ice-white);
+            cursor: pointer;
+            text-align: left;
+            font: 600 1.1rem 'Rajdhani', sans-serif;
+            transition: 0.15s;
+        }
+
+        .opt kbd {
+            flex: none;
+            display: grid;
+            place-items: center;
+            width: 30px;
+            height: 30px;
+            border: 1px solid var(--neon-blue);
+            font: 700 0.85rem 'Share Tech Mono', monospace;
+            color: var(--neon-blue);
+        }
+
+        .opt:hover:not(:disabled) {
+            background: rgba(0, 229, 255, 0.16);
+            border-color: var(--neon-blue);
+        }
+
+        .opt:disabled {
+            cursor: default;
+        }
+
+        .opt.correct {
+            background: rgba(57, 255, 136, 0.16);
+            border-color: var(--good);
+            box-shadow: 0 0 18px rgba(57, 255, 136, 0.3);
+        }
+
+        .opt.correct kbd {
+            border-color: var(--good);
+            color: var(--good);
+        }
+
+        .opt.wrong {
+            background: rgba(255, 59, 92, 0.16);
+            border-color: var(--bad);
+        }
+
+        .opt.wrong kbd {
+            border-color: var(--bad);
+            color: var(--bad);
+        }
+
+        .opt.dim {
+            opacity: 0.45;
+        }
+
+        .feedback {
+            margin-top: 22px;
+        }
+
+        .verdict {
+            margin-bottom: 12px;
+            font: 900 1.2rem 'Orbitron', sans-serif;
+            letter-spacing: 0.08em;
+        }
+
+        .verdict.ok {
+            color: var(--good);
+        }
+
+        .verdict.no {
+            color: var(--bad);
+        }
+
+        .feedback .btn {
+            margin-top: 16px;
+        }
+
+        /* ======== GHOST INFO CARD (after an answer / in the review) ======== */
+        .info {
+            padding: 16px 18px;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid var(--border-glow);
+        }
+
+        .info-head {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .info-head b {
+            margin-right: 6px;
+            font: 900 1.15rem 'Orbitron', sans-serif;
+            letter-spacing: 0.05em;
+            color: #fff;
+        }
+
+        .badge {
+            padding: 3px 9px;
+            border: 1px solid currentColor;
+            background: rgba(0, 0, 0, 0.4);
+            font: 0.72rem 'Share Tech Mono', monospace;
+            text-transform: uppercase;
+            color: var(--neon-blue);
+        }
+
+        .badge.emf { color: var(--color-emf); }
+        .badge.box { color: var(--color-box); }
+        .badge.dots { color: var(--color-dots); }
+        .badge.uv { color: var(--color-uv); }
+        .badge.writing { color: var(--color-writing); }
+        .badge.orbs { color: var(--color-orbs); }
+        .badge.freezing { color: var(--color-freezing); }
+
+        .info-stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 26px;
+            font: 0.78rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.1em;
+            color: #6fa3b0;
+        }
+
+        .info-stats b {
+            color: var(--neon-blue);
+        }
+
+        .info details {
+            margin-top: 12px;
+        }
+
+        .info summary {
+            cursor: pointer;
+            font: 0.78rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.12em;
+            color: var(--mag);
+        }
+
+        .info h4 {
+            margin: 12px 0 4px;
+            font: 0.7rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.2em;
+            color: #6fa3b0;
+        }
+
+        .info ul {
+            margin-left: 18px;
+            line-height: 1.45;
+            color: #c4e6ee;
+        }
+
+        .info li {
+            margin-bottom: 4px;
+        }
+
+        /* ======== RESULT SCREEN ======== */
+        .result-top {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 26px;
+            text-align: center;
+        }
+
+        .ring {
+            --p: 0;
+            display: grid;
+            place-items: center;
+            width: 190px;
+            height: 190px;
+            border-radius: 50%;
+            background: conic-gradient(var(--neon-blue) calc(var(--p) * 1%), rgba(0, 229, 255, 0.12) 0);
+            box-shadow: 0 0 34px rgba(0, 229, 255, 0.3);
+        }
+
+        .ring div {
+            display: grid;
+            place-items: center;
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            background: #031017;
+            font: 900 2.4rem 'Orbitron', sans-serif;
+            line-height: 1.1;
+        }
+
+        .ring small {
+            display: block;
+            font: 0.8rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.15em;
+            color: #6fa3b0;
+        }
+
+        .rank {
+            font: 900 clamp(1.3rem, 4vw, 2rem) 'Orbitron', sans-serif;
+            letter-spacing: 0.08em;
+            color: var(--mag);
+            text-shadow: 0 0 18px rgba(255, 43, 214, 0.5);
+        }
+
+        .result-meta {
+            margin-top: 8px;
+            font: 0.85rem 'Share Tech Mono', monospace;
+            letter-spacing: 0.1em;
+            color: var(--yel);
+        }
+
+        .missed {
+            display: grid;
+            gap: 16px;
+            margin: 18px 0 26px;
+        }
+
+        .missed-item .q {
+            margin-bottom: 6px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .missed-item .a {
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+            color: #9fd3de;
+        }
+
+        .missed-item .a b {
+            color: var(--good);
+        }
+
+        .missed-item .a s {
+            color: var(--bad);
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 14px;
+        }
+
+        .note {
+            margin-top: 30px;
+            text-align: center;
+            font: 0.75rem 'Share Tech Mono', monospace;
+            line-height: 1.6;
+            color: #5f97a4;
+        }
+
+        @media (max-width: 700px) {
+            .page {
+                padding: 80px 14px 60px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <a class="back-link" href="index.html">← POWRÓT DO GHOSTLAB</a>
+
+    <main class="page">
+        <header class="hero">
+            <div class="eyebrow">[ TRAINING SIMULATION // GHOST QUIZ ]</div>
+            <h1>QUIZ: ROZPOZNAJ DUCHA</h1>
+            <p>Sprawdź, ile wiesz o <b id="ghost-count">30</b> duchach. Pytania powstają z danych na kartach: dowodów, prędkości, progu ataku, notatek i wskazówek 0-evidence.</p>
+        </header>
+
+        <!-- 1. choose a mode -->
+        <section id="screen-start">
+            <div class="label">DŁUGOŚĆ RUNDY</div>
+            <div class="lengths" id="lengths">
+                <button class="pill active" data-total="10">10 PYTAŃ</button>
+                <button class="pill" data-total="20">20 PYTAŃ</button>
+                <button class="pill" data-total="30">30 PYTAŃ</button>
+            </div>
+
+            <div class="label" style="margin-bottom: 12px;">WYBIERZ TRYB</div>
+            <div class="modes" id="modes"></div>
+        </section>
+
+        <!-- 2. questions -->
+        <section id="screen-question" hidden>
+            <div class="status">
+                <span>PYTANIE <b id="q-number">1</b> / <span id="q-total">10</span></span>
+                <span>WYNIK <b id="q-score">0</b></span>
+                <span>SERIA <b id="q-streak">0</b></span>
+            </div>
+            <div class="bar"><i id="q-bar"></i></div>
+
+            <div class="panel">
+                <div class="question" id="q-text"></div>
+                <div class="clue" id="q-clue" hidden></div>
+                <div class="options" id="q-options"></div>
+                <div class="feedback" id="q-feedback" hidden></div>
+            </div>
+        </section>
+
+        <!-- 3. result -->
+        <section id="screen-result" hidden>
+            <div class="panel">
+                <div class="result-top">
+                    <div class="ring" id="r-ring"><div><span id="r-score">0/0</span></div></div>
+                    <div>
+                        <div class="rank" id="r-rank"></div>
+                        <div class="result-meta" id="r-meta"></div>
+                    </div>
+                </div>
+
+                <div id="r-missed-wrap" hidden>
+                    <div class="label">DO POWTÓRKI: TE PYTANIA SIĘ NIE UDAŁY</div>
+                    <div class="missed" id="r-missed"></div>
+                </div>
+
+                <div class="actions">
+                    <button class="btn" id="r-again">ZAGRAJ PONOWNIE</button>
+                    <button class="btn ghost" id="r-menu">ZMIEŃ TRYB</button>
+                </div>
+            </div>
+        </section>
+
+        <p class="note">Pytania są generowane z danych o duchach z tej strony. Wartości mogą zmieniać się z aktualizacjami gry.</p>
+    </main>
+
+    <script>
+        "use strict";
+
+        /* ==========================================================================
+           GHOST DATA
+           A copy of the information on the ghost cards (evidence, hunt threshold,
+           speed, investigation notes and 0-evidence tips), already split into short
+           lines. If you change a ghost on the main page, change it here too.
+           ========================================================================== */
+
+        const GHOSTS = [
+            {
+                "name": "Aswang",
+                "evidence": [
+                    "Freezing Temps",
+                    "Ghost Writing",
+                    "DOTS"
+                ],
+                "sanity": "50%",
+                "speed": "1.53 - 2.53 m/s",
+                "notes": [
+                    "Zaczyna każde polowanie wolniej niż większość duchów (1.53 m/s), ale po złapaniu LOS (Line of Sight) przyspiesza szybciej niż jakikolwiek inny duch (do ok. 2.53 m/s).",
+                    "Nie może zabić gracza ukrytego w oficjalnym schowku (szafa, szafka – tylko te wbudowane w mapę).",
+                    "Jeśli wykryje gracza i dotrze do jego schowka, polowanie natychmiast się kończy.",
+                    "Następne polowanie po takim zakończeniu idzie prosto do tego gracza i może nie mieć grace period.",
+                    "Woli gonić niż szukać – jest mniej groźny, gdy zerwiesz line of sight.",
+                    "Kadzidło podczas polowania zatrzymuje go na 5 sekund."
+                ],
+                "zero": [
+                    "Podczas polowania wejdź do oficjalnego schowka. Jeśli duch dotrze do niego, a polowanie kończy się bez zabicia, jest to Aswang. Jeśli duch zabije gracza w oficjalnym schowku, nie jest to Aswang.",
+                    "Obserwuj prędkość: startuje od 1.53 m/s w każdym polowaniu, a po zauważeniu gracza rozpędza się wyraźnie szybciej niż inne duchy. Jeśli bazowa prędkość kiedykolwiek wzrośnie, nie jest to Aswang.",
+                    "Jeśli poprzednie polowanie skończyło się w schowku, a następne leci prosto do tego samego gracza, to mocna wskazówka na Aswang.",
+                    "Odróżnienie od Revenanta: Revenant bez LOS idzie 1.0 m/s, Aswang 1.53 m/s."
+                ]
+            },
+            {
+                "name": "Banshee",
+                "evidence": [
+                    "Ultraviolet",
+                    "Ghost Orbs",
+                    "DOTS"
+                ],
+                "sanity": "50%",
+                "speed": "1.7 m/s",
+                "notes": [
+                    "Może być tylko kobietą (imię i model).",
+                    "33% szans na wydanie 1 z 20 unikalnych krzyków przez mikrofon paraboliczny.",
+                    "Poluje na podstawie sanity celu, nie średniej grupy.",
+                    "Podczas huntu ściga tylko swoją ofiarę (jeśli jest wewnątrz).",
+                    "Cel traci 15% sanity przy dotknięciu ducha podczas śpiewania (zamiast 10%).",
+                    "Preferuje eventy ze śpiewem.",
+                    "W stanie DOTS wędruje w stronę celu.",
+                    "66% szans na podejście do celu bez zostawiania EMF.",
+                    "Atakuje przy 50% sanity celu (nawet jeśli cel jest na zewnątrz, co może oznaczać atak przy 87% średniej grupy)."
+                ],
+                "zero": [
+                    "Nasłuchuj ducha za pomocą mikrofonu parabolicznego – jeśli usłyszysz unikalny krzyk, jest to Banshee.",
+                    "W trybie wieloosobowym niech wszyscy gracze będą w środku podczas polowania. Jeśli duch nie ściga graczy, którzy nie są jego celem, lub jeśli tacy gracze mogą dotknąć ducha bez ryzyka śmierci, jest to Banshee.",
+                    "Rozmieść czujniki ruchu na mapie. Użyj ich, aby sprawdzić, czy duch często wędruje w stronę jednego z graczy. Jeśli tak, może to być Banshee.",
+                    "Jeśli duch ma męski model postaci lub męskie imię, nie jest to Banshee."
+                ]
+            },
+            {
+                "name": "Dayan",
+                "evidence": [
+                    "Ultraviolet",
+                    "Ghost Writing",
+                    "DOTS"
+                ],
+                "sanity": "65% / 45% / 50%",
+                "speed": "1.2 - 2.25 m/s",
+                "notes": [
+                    "Może być tylko kobietą (imię i model).",
+                    "Prędkość huntu i próg ataku zależą od ruchu gracza w pobliżu:",
+                    "65% gdy gracz idzie blisko ducha.",
+                    "45% gdy gracz stoi nieruchomo blisko ducha.",
+                    "50% gdy gracz jest daleko.",
+                    "Prędkość poruszania się:",
+                    "2.25m/s jeśli najbliższy gracz idzie w promieniu 10m.",
+                    "1.2m/s jeśli najbliższy gracz stoi w promieniu 10m.",
+                    "1.7m/s jeśli wszyscy gracze są dalej niż 10m.",
+                    "Przyspieszenie wzrokowe (LOS) działa tylko powyżej 10m od graczy. Poniżej 10m nie przyspiesza w zasięgu wzroku, ale bonus ten nadal kumuluje się w tle."
+                ],
+                "zero": [
+                    "Może być tylko kobietą (imię i model).",
+                    "W promieniu 10 m: gdy idziesz, przyspiesza (2.25 m/s, próg 65%); gdy stoisz nieruchomo, zwalnia (1.2 m/s, próg 45%). Zatrzymuj się i ruszaj na zmianę, aby to sprawdzić.",
+                    "Powyżej 10 m ma standardowe 1.7 m/s."
+                ]
+            },
+            {
+                "name": "Deildegast",
+                "evidence": [
+                    "EMF 5",
+                    "Ghost Writing",
+                    "DOTS"
+                ],
+                "sanity": "50%",
+                "speed": "3.0 - 0.4 m/s",
+                "notes": [
+                    "Każde polowanie zaczyna z prędkością 3.0 m/s – jest jednym z najszybszych duchów w grze.",
+                    "Każdy unikalny przedmiot przeniesiony lub użyty przed polowaniem spowalnia go o 0.1 m/s (minimum 0.4 m/s po ok. 26 przedmiotach).",
+                    "Prędkość wraca do 3.0 m/s po każdym polowaniu oraz po spaleniu krzyża (Crucifix).",
+                    "Nie przyspiesza z line of sight – prędkość jest stała podczas całego polowania.",
+                    "Nie posiada umiejętności specjalnej. Próg ataku: 50% sanity.",
+                    "Spowalniać go mogą także martwi gracze."
+                ],
+                "zero": [
+                    "Nie dotykaj przedmiotów przed polowaniem. Jeśli duch od startu porusza się z prędkością około 3.0 m/s i nie przyspiesza z line of sight, jest to Deildegast.",
+                    "Przenieś lub rzuć wiele różnych przedmiotów przed kolejnym polowaniem. Jeśli duch jest wyraźnie wolniejszy, to Deildegast.",
+                    "Efekt znika po każdym polowaniu, więc powtarzaj testy między atakami.",
+                    "Jeśli duch przyspiesza z LOS, nie jest to Deildegast.",
+                    "Łatwo go pomylić z Thaye (wspólne DOTS i Ghost Writing) – Thaye zaczyna polować przy 75% sanity i z wiekiem zwalnia."
+                ]
+            },
+            {
+                "name": "Demon",
+                "evidence": [
+                    "Ultraviolet",
+                    "Ghost Writing",
+                    "Freezing Temps"
+                ],
+                "sanity": "70% / Dowolne",
+                "speed": "1.7 m/s",
+                "notes": [
+                    "Może zaatakować przy dowolnym sanity (umiejętność specjalna).",
+                    "Standardowy próg ataku to 70%.",
+                    "Może polować już po 60 sekundach od użycia kadzidła (zamiast standardowych 90s).",
+                    "Przerwa między polowaniami (lub po użyciu krzyża) wynosi tylko 20 sekund (zamiast 25s).",
+                    "Zasięg Krzyża (Crucifix) zwiększony o 50% na każdy Tier: 4.5m / 6m / 7.5m."
+                ],
+                "zero": [
+                    "Może polować 60 s po kadzidle zamiast 90 s.",
+                    "Przerwa między polowaniami to tylko 20 s zamiast 25 s.",
+                    "Zasięg Krzyża jest większy o 50% na każdy Tier (4.5 / 6 / 7.5 m).",
+                    "Poluje też przy wysokim sanity – częste, wczesne polowania to dobra wskazówka."
+                ]
+            },
+            {
+                "name": "Deogen",
+                "evidence": [
+                    "Spirit Box",
+                    "Ghost Writing",
+                    "DOTS"
+                ],
+                "sanity": "40%",
+                "speed": "3.0 - 0.4 m/s",
+                "notes": [
+                    "33% szans na unikalny ciężki oddech przez Spirit Box w zasięgu 1m od ducha.",
+                    "Bardzo szybki, gdy jest daleko (3.0 m/s), ale zwalnia drastycznie blisko gracza (0.4 m/s).",
+                    "Jest bardziej widoczny podczas polowań.",
+                    "Zawsze posiada LOS (Line of Sight) na gracza – nie da się przed nim ukryć.",
+                    "Gwarantowany Spirit Box na poziomach Nightmare/Insanity."
+                ],
+                "zero": [
+                    "Zawsze zna Twoją pozycję w polowaniu (LOS) – nie da się przed nim ukryć.",
+                    "Daleko od gracza jest bardzo szybki (3.0 m/s), ale blisko zwalnia do 0.4 m/s, co pozwala go loopować.",
+                    "33% szans na unikalny ciężki oddech przez Spirit Box w zasięgu 1 m."
+                ]
+            },
+            {
+                "name": "Gallu",
+                "evidence": [
+                    "EMF 5",
+                    "Ultraviolet",
+                    "Spirit Box"
+                ],
+                "sanity": "40% / 50% / 60%",
+                "speed": "1.36 - 1.96 m/s",
+                "notes": [
+                    "Przechodzi przez 3 cykliczne stany zmieniające zachowanie:",
+                    "Normalny: Próg 50%, Prędkość 1.7 m/s.",
+                    "Wściekły (Enraged): Próg 60%, Prędkość 1.96 m/s.",
+                    "Osłabiony (Weakened): Próg 40%, Prędkość 1.36 m/s.",
+                    "Cykle zmieniają się w czasie, co sprawia, że duch jest nieprzewidywalny pod kątem agresji."
+                ],
+                "zero": [
+                    "Cyklicznie zmienia stan: Normalny (1.7 m/s, 50%), Wściekły (1.96 m/s, 60%) i Osłabiony (1.36 m/s, 40%).",
+                    "Wściekły Gallu podczas polowania przechodzi przez sól i nie zostawia śladu stóp.",
+                    "Mierz prędkość w kilku polowaniach – zmienia się między nimi."
+                ]
+            },
+            {
+                "name": "Goryo",
+                "evidence": [
+                    "EMF 5",
+                    "Ultraviolet",
+                    "DOTS"
+                ],
+                "sanity": "50%",
+                "speed": "1.7 m/s",
+                "notes": [
+                    "Projektor DOTS jest widoczny tylko przez kamerę wideo i tylko wtedy, gdy w pokoju nie ma gracza.",
+                    "Nigdy nie zmienia swojego ulubionego pokoju.",
+                    "Bardzo rzadko oddala się od swojego pokoju (mały zasięg roamingu).",
+                    "Częściej niż inne duchy wchodzi w stan DOTS.",
+                    "Gwarantowany DOTS na poziomach Nightmare/Insanity."
+                ],
+                "zero": [
+                    "Nigdy nie zmienia ulubionego pokoju.",
+                    "Przy małej liczbie dowodów (Nightmare/Insanity) ma gwarantowany DOTS.",
+                    "DOTS widać tylko przez kamerę wideo i tylko wtedy, gdy w pokoju nie ma gracza.",
+                    "Rzadko oddala się od swojego pokoju."
+                ]
+            },
+            {
+                "name": "Hantu",
+                "evidence": [
+                    "Ultraviolet",
+                    "Ghost Orbs",
+                    "Freezing Temps"
+                ],
+                "sanity": "50%",
+                "speed": "1.4 - 2.7 m/s",
+                "notes": [
+                    "Podczas polowania widać jego mroźny oddech, jeśli bezpiecznik jest wyłączony lub zepsuty.",
+                    "Nigdy nie włącza bezpiecznika; bardzo często go wyłącza.",
+                    "Prędkość zależy od temperatury: jest znacznie szybszy w zimnych pomieszczeniach (do 2.7 m/s) i wolniejszy w ciepłych.",
+                    "Nie przyspiesza w zasięgu wzroku (brak Line-of-Sight speed-up).",
+                    "Gwarantowane ujemne temperatury na poziomach Nightmare/Insanity."
+                ],
+                "zero": [
+                    "Podczas polowania widać jego mroźny oddech, jeśli bezpiecznik jest wyłączony lub zepsuty.",
+                    "Nigdy nie włącza bezpiecznika, a często go wyłącza.",
+                    "W zimnych pomieszczeniach jest szybszy (do 2.7 m/s), w ciepłych wolniejszy (1.4 m/s).",
+                    "Nie przyspiesza z line of sight."
+                ]
+            },
+            {
+                "name": "Jinn",
+                "evidence": [
+                    "EMF 5",
+                    "Ultraviolet",
+                    "Freezing Temps"
+                ],
+                "sanity": "50%",
+                "speed": "1.7 - 2.5 m/s",
+                "notes": [
+                    "Gdy bezpiecznik jest włączony, przyspiesza do 2.5 m/s, jeśli widzi gracza (LOS) w odległości większej niż 3m.",
+                    "Umiejętność specjalna: Przy włączonym prądzie może obniżyć sanity gracza o 25% (w promieniu 3m lub w tym samym pokoju), zostawiając EMF 2/5 przy bezpieczniku.",
+                    "Nigdy nie wyłącza bezpiecznika bezpośrednio.",
+                    "Gdy warunek 2.5 m/s jest spełniony, standardowe przyspieszenie LOS nie jest nakładane, ale nadal 'ładuje się' w tle."
+                ],
+                "zero": [
+                    "Przy włączonym prądzie przyspiesza do 2.5 m/s, gdy widzi gracza z ponad 3 m. Wyłącz bezpiecznik – jeśli prędkość spada do 1.7 m/s, to Jinn.",
+                    "Nigdy nie wyłącza bezpiecznika.",
+                    "Umiejętność: obniża sanity gracza o 25% w promieniu 3 m, zostawiając EMF przy bezpieczniku."
+                ]
+            },
+            {
+                "name": "Kormos",
+                "evidence": [
+                    "Ghost Orbs",
+                    "Spirit Box",
+                    "Ultraviolet"
+                ],
+                "sanity": "50% / 70%",
+                "speed": "1.7 - 2.21 m/s",
+                "notes": [
+                    "Jest prawie ślepy – widzi gracza tylko z bliska (ok. 5m, bez przeszkód), ale ma niezwykle wyostrzony słuch.",
+                    "Jako jedyny duch słyszy kroki podczas polowania (co sekundę wykonuje „impuls słuchu”). Sprint jest dla niego najgłośniejszy – może go usłyszeć nawet z 30m.",
+                    "Próg ataku: 50% sanity, 70% gdy gracz biegnie w jego pokoju.",
+                    "Prędkość: 1.7 m/s, a gdy idzie za wykrytym dźwiękiem z daleka – ×1.3 (ok. 2.21 m/s).",
+                    "Nie wykonuje eventu, w którym pojawia się i idzie w stronę gracza.",
+                    "Kadzidło oślepia go na 5 sekund i w tym czasie nie słyszy ani nie zabija dotykiem."
+                ],
+                "zero": [
+                    "Podczas polowania stań w miejscu i nie wydawaj dźwięków. Jeśli duch przechodzi obok bez reakcji, jest to Kormos (wykonuj test przy otwartej przestrzeni i drodze ucieczki).",
+                    "Jeśli duch reaguje na kroki, a nie na sam widok gracza, i szybko namierza biegnącego, to prawdopodobnie Kormos.",
+                    "Sprint w pokoju ducha poza polowaniem podnosi jego próg do 70% – to dobra pułapka testowa.",
+                    "Jeśli nigdy nie wykonuje eventu z podejściem do gracza, wzmacnia to podejrzenie na Kormos.",
+                    "Pełne dowody Kormos są takie same jak u The Mimic – zrób test zachowania, aby go wykluczyć."
+                ]
+            },
+            {
+                "name": "Mare",
+                "evidence": [
+                    "Spirit Box",
+                    "Ghost Orbs",
+                    "Ghost Writing"
+                ],
+                "sanity": "40% / 60%",
+                "speed": "1.7 m/s",
+                "notes": [
+                    "Próg ataku zależy od światła w pokoju ducha: 40% sanity (światło zapalone), 60% sanity (światło zgaszone/rozbite).",
+                    "Umiejętność: Może natychmiast zgasić światło, które gracz właśnie zapalił (w promieniu 4m).",
+                    "Jako jedyny duch może użyć przełącznika światła podczas eventu.",
+                    "Nigdy nie zapala świateł (ani TV/komputerów). Nie potrafi 'mrugać' światłem przy użyciu EMF 2.",
+                    "Częściej wykonuje eventy z rozbijaniem żarówek i częściej zmienia pokój, gdy pali się w nim światło"
+                ],
+                "zero": [
+                    "Podczas eventu zapal światło w promieniu 4 m. Jeśli natychmiast zgaśnie, jest to Mare.",
+                    "Częściej gasi światła i rozbija żarówki.",
+                    "Próg ataku: 60% (ciemny pokój) / 40% (jasny pokój)."
+                ]
+            },
+            {
+                "name": "Moroi",
+                "evidence": [
+                    "Spirit Box",
+                    "Ghost Writing",
+                    "Freezing Temps"
+                ],
+                "sanity": "50%",
+                "speed": "1.5 - 2.25 m/s",
+                "notes": [
+                    "Klątwa: Nakłada klątwę na gracza, gdy ten usłyszy: odpowiedź na Spirit Boxie, dźwięk w mikrofonie parabolicznym lub nagrany dźwięk na rejestratorze. Powoduje to 2x szybszy pasywny spadek sanity (nawet w świetle).",
+                    "Czas oślepienia kadzidłem podczas polowania jest wydłużony z 5s do 7s.",
+                    "Prędkość bazowa zależy od średniego sanity; przy 0% i ciągłym LOS może osiągnąć aż 3.71 m/s.",
+                    "Gwarantowany Spirit Box na poziomach Nightmare/Insanity."
+                ],
+                "zero": [
+                    "Im niższe średnie sanity, tym szybszy w polowaniu (od 1.5 m/s w górę, max ok. 3.71 m/s).",
+                    "Klątwa: po usłyszeniu go przez Spirit Box, mikrofon paraboliczny lub rejestrator sanity spada 2× szybciej, nawet w świetle.",
+                    "Kadzidło oślepia go na 7 s zamiast 5 s."
+                ]
+            },
+            {
+                "name": "Myling",
+                "evidence": [
+                    "EMF 5",
+                    "Ultraviolet",
+                    "Ghost Writing"
+                ],
+                "sanity": "50%",
+                "speed": "1.7 m/s",
+                "notes": [
+                    "Podczas polowania kroki i wokal ducha są słyszalne tylko z odległości 12m (standardowo jest to 20m).",
+                    "Znacznie częściej niż inne duchy wydaje dźwięki przez mikrofon paraboliczny oraz rejestrator dźwięku.",
+                    "Jeśli słyszysz latarkę/elektronikę, ale nie słyszysz kroków – to prawdopodobnie Myling."
+                ],
+                "zero": [
+                    "Często wydaje dźwięki przez mikrofon paraboliczny (zwykle w odstępach do 80 s).",
+                    "Podczas polowania kroków i głosu nie słychać między 12 a 20 m.",
+                    "Słyszysz latarkę lub elektronikę, ale nie kroki – to prawdopodobnie Myling."
+                ]
+            },
+            {
+                "name": "Obake",
+                "evidence": [
+                    "EMF 5",
+                    "Ultraviolet",
+                    "Ghost Orbs"
+                ],
+                "sanity": "50%",
+                "speed": "1.7 m/s",
+                "notes": [
+                    "Unikalny odcisk: Ma szansę zostawić odcisk dłoni z 6 palcami.",
+                    "Podczas polowania przynajmniej raz zmieni model ducha na ułamek sekundy (mrugnięcie).",
+                    "Ma 25% szans na niezostawienie śladów UV (w tym odcisków stóp) mimo interakcji.",
+                    "Odciski palców mogą znikać 2x szybciej niż u innych duchów.",
+                    "25% szans na brak dźwięku kroku podczas eventu.",
+                    "Gwarantowane Ultraviolet na poziomach Nightmare/Insanity."
+                ],
+                "zero": [
+                    "Podczas polowania na ułamek sekundy zmienia model ducha (mrugnięcie).",
+                    "25% szans, że krok w soli „zgubi” dźwięk (krok… krok… pauza… krok).",
+                    "Może zostawić odcisk dłoni z 6 palcami, a odciski znikają 2× szybciej."
+                ]
+            },
+            {
+                "name": "Obambo",
+                "evidence": [
+                    "Ghost Writing",
+                    "Ultraviolet",
+                    "DOTS"
+                ],
+                "sanity": "10% / 65%",
+                "speed": "1.45 - 1.96 m/s",
+                "notes": [
+                    "Co 2 minuty przełącza się między stanem Spokojnym a Agresywnym (timer startuje po otwarciu drzwi wejściowych).",
+                    "Próg ataku: 65% sanity (Agresywny) / 10% sanity (Spokojny).",
+                    "Prędkość: 1.96 m/s (Agresywny) / 1.45 m/s (Spokojny).",
+                    "Czas trwania polowania jest skrócony o 20%, jeśli zacznie się ono w stanie Agresywnym.",
+                    "Duch potrafi zmienić stan (i prędkość) w trakcie trwania polowania."
+                ],
+                "zero": [
+                    "Co 2 minuty przełącza się między stanem Spokojnym a Agresywnym, nawet w trakcie polowania.",
+                    "Agresywny: 65%, 1.96 m/s. Spokojny: 10%, 1.45 m/s.",
+                    "Mierz prędkość w polowaniu – zmiana prędkości w trakcie jednego polowania to mocna wskazówka."
+                ]
+            },
+            {
+                "name": "Oni",
+                "evidence": [
+                    "EMF 5",
+                    "Freezing Temps",
+                    "DOTS"
+                ],
+                "sanity": "50%",
+                "speed": "1.7 m/s",
+                "notes": [
+                    "Podczas eventów zabiera 20% sanity (zamiast standardowych 10%).",
+                    "Nigdy nie wykonuje eventu 'Ghost Mist' (biała chmura/mgiełka).",
+                    "Podczas polowania mruga znacznie szybciej, przez co jest lepiej widoczny.",
+                    "Znacznie bardziej aktywny, gdy w pobliżu znajduje się wielu graczy.",
+                    "Ma większą szansę na pojawienie się jako pełny model ducha podczas eventów."
+                ],
+                "zero": [
+                    "Podczas eventów zabiera 20% sanity zamiast 10%.",
+                    "Nigdy nie wykonuje eventu Ghost Mist.",
+                    "W polowaniu jest bardziej widoczny (szybciej mruga).",
+                    "Jest aktywniejszy, gdy w pobliżu jest wielu graczy."
+                ]
+            },
+            {
+                "name": "Onryo",
+                "evidence": [
+                    "Spirit Box",
+                    "Ghost Orbs",
+                    "Freezing Temps"
+                ],
+                "sanity": "40% / 60% / 100%",
+                "speed": "1.7 m/s",
+                "notes": [
+                    "Płomienie działają jak krzyże (zasięg 4m). Duch nada im priorytet nad prawdziwym krzyżem.",
+                    "Umiejętność: Po zdmuchnięciu co trzeciego płomienia spróbuje polować przy dowolnym sanity.",
+                    "Szansa na zdmuchnięcie rośnie wraz z liczbą martwych graczy.",
+                    "Próg ataku: 60% sanity (normalnie) / 40% sanity (gdy w pobliżu palą się ognie).",
+                    "Jako jedyny może zgasić to samo źródło ognia dwa razy w ciągu 20s. Nigdy nie zapala ognia."
+                ],
+                "zero": [
+                    "Po zdmuchnięciu 3 płomieni (świece, firelighty) próbuje polować przy dowolnym sanity.",
+                    "Jako jedyny może zgasić to samo źródło ognia dwa razy w ciągu 20 s.",
+                    "Płomienie działają jak krzyże (zasięg 4 m), więc zapalone świece mogą powstrzymać jego polowanie."
+                ]
+            },
+            {
+                "name": "Phantom",
+                "evidence": [
+                    "Spirit Box",
+                    "Ultraviolet",
+                    "DOTS"
+                ],
+                "sanity": "50%",
+                "speed": "1.7 m/s",
+                "notes": [
+                    "Nie pojawia się na zdjęciach ani filmach typu „Ghost” (widoczny jednak jako „Translucent”, „Shadow”, „DOTS” lub „Hunting”).",
+                    "Zrobienie zdjęcia lub nagranie ducha (również w stanie DOTS) powoduje jego natychmiastowe zniknięcie.",
+                    "Jest znacznie słabiej widoczny podczas polowania (rzadsze mruganie).",
+                    "Gracz traci 0.5% sanity na sekundę, będąc w zasięgu bicia serca podczas polowań i eventów.",
+                    "Umiejętność: Może podejść do losowego gracza, zostawiając EMF 2 w miejscu, do którego zawędrował (na wysokości głowy)."
+                ],
+                "zero": [
+                    "Zdjęcie lub nagranie ducha (także w stanie DOTS) sprawia, że znika.",
+                    "W polowaniu jest słabiej widoczny (rzadsze mruganie).",
+                    "Tracisz 0.5% sanity na sekundę w zasięgu bicia serca podczas polowań i eventów."
+                ]
+            },
+            {
+                "name": "Poltergeist",
+                "evidence": [
+                    "Spirit Box",
+                    "Ultraviolet",
+                    "Writing"
+                ],
+                "sanity": "50%",
+                "speed": "1.7 m/s",
+                "notes": [
+                    "Podczas polowań rzuca przedmiotem co 0.5s ze zwiększoną siłą.",
+                    "Ma znacznie wyższą szansę na rzucanie przedmiotami i interakcje z otoczeniem.",
+                    "Potrafi rzucać obiektami szybciej i na większą odległość.",
+                    "Eksplozja Poltergeista: Rzuca wieloma przedmiotami naraz, obniżając pobliskim graczom sanity o 2% za każdy wyrzucony przedmiot (istnieją 4 rodzaje rzutów).",
+                    "Jedyny duch, który może rzucić przedmiotem, gdy znajduje się w zapalonym pomieszczeniu."
+                ],
+                "zero": [
+                    "Podczas polowania rzuca przedmiotami co 0.5 s.",
+                    "Rzuca szybciej i dalej niż inne duchy.",
+                    "Ułóż kilka przedmiotów w jednym miejscu – jeśli polecą naraz, to Poltergeist Explosion (-2% sanity za przedmiot)."
+                ]
+            },
+            {
+                "name": "Raiju",
+                "evidence": [
+                    "EMF 5",
+                    "Ghost Orbs",
+                    "DOTS"
+                ],
+                "sanity": "50% / 65%",
+                "speed": "1.7 - 2.5 m/s",
+                "notes": [
+                    "Podczas eventów i polowań zakłóca elektronikę w zasięgu 15m (zamiast standardowych 10m).",
+                    "Zwiększona prędkość podczas polowania, gdy aktywna elektronika znajduje się w promieniu odpowiednio 6m, 8m lub 10m (mapy Małe, Średnie, Duże).",
+                    "Posiada głośniejszy dźwięk bicia serca niż inne duchy.",
+                    "Może zacząć polowanie przy 65% sanity, jeśli znajduje się w pobliżu aktywnego sprzętu graczy.",
+                    "Prędkość wynosi 2.5 m/s w zasięgu elektroniki, w przeciwnym razie 1.7 m/s.",
+                    "Posiada przyspieszenie LOS (Line of Sight), gdy jest poza zasięgiem elektroniki. W zasięgu sprzętu bonus LOS nie jest nakładany, ale nadal nalicza się w tle."
+                ],
+                "zero": [
+                    "Elektronika (np. latarki) zakłóca się w promieniu 15 m zamiast 10 m.",
+                    "W polowaniu przyspiesza do 2.5 m/s, gdy w pobliżu jest aktywny sprzęt – wyłącz go i sprawdź, czy prędkość spada do 1.7 m/s.",
+                    "Ma głośniejsze bicie serca niż inne duchy."
+                ]
+            },
+            {
+                "name": "Revenant",
+                "evidence": [
+                    "Ghost Orbs",
+                    "Writing",
+                    "Freezing Temps"
+                ],
+                "sanity": "50%",
+                "speed": "1.0 - 3.0 m/s",
+                "notes": [
+                    "Podczas polowania jest bardzo powolny (1.0 m/s), dopóki nie wykryje gracza (głos, aktywna elektronika lub LOS).",
+                    "Po wykryciu gracza natychmiast przyspiesza do 3.0 m/s i utrzymuje tę prędkość, aż dotrze do ostatniej znanej lokalizacji gracza.",
+                    "Po dotarciu do celu, jeśli nie widzi już gracza, stopniowo zwalnia z powrotem do 1.0 m/s.",
+                    "Prędkość wynosi 3.0 m/s, gdy gracz jest wykryty, w przeciwnym razie 1.0 m/s."
+                ],
+                "zero": [
+                    "Podczas polowania idzie 1.0 m/s, dopóki nie wykryje gracza (głos, elektronika lub LOS).",
+                    "Po wykryciu pędzi 3.0 m/s do ostatniej znanej pozycji, a gdy nikogo nie znajdzie, wraca do 1.0 m/s.",
+                    "Test: schowaj się i wyłącz sprzęt – prędkość spada."
+                ]
+            },
+            {
+                "name": "Shade",
+                "evidence": [
+                    "EMF 5",
+                    "Writing",
+                    "Freezing Temps"
+                ],
+                "sanity": "35%",
+                "speed": "1.7 m/s",
+                "notes": [
+                    "Jedyny duch, który może pojawić się jako „Shadow Ghost” podczas użycia Summoning Circle, Music Box i Monkey Paw.",
+                    "Nie potrafi wykonywać eventów ze śpiewem (Singing Ghost Events).",
+                    "Nie potrafi wykonać interakcji „podnieś i rzuć w gracza”.",
+                    "Podczas eventów preferuje model cienia.",
+                    "Nie rozpocznie polowania, jeśli znajduje się w tym samym pomieszczeniu co gracz.",
+                    "Nie wykonuje eventów w tym samym pokoju (może jednak zacząć event na zewnątrz i przeteleportować się do gracza).",
+                    "Nie wykonuje interakcji EMF 2, 3 ani 5 (w tym pisania i gaszenia ognia), będąc w tym samym pokoju (może jednak stanąć tuż za progiem i wejść w interakcję z obiektem wewnątrz).",
+                    "Wykonuje więcej eventów przy niższym średnim sanity (nie robi ich wcale przy 100%).",
+                    "Nie zdmuchuje źródeł ognia podczas polowania, jeśli jest w tym samym pokoju co gracz.",
+                    "Próg ataku: 35% sanity."
+                ],
+                "zero": [
+                    "Nie zacznie polowania, gdy jesteś w tym samym pokoju co duch.",
+                    "Nie wykonuje interakcji z EMF 2, 3 i 4 w pokoju z graczem.",
+                    "Preferuje model cienia w eventach, a przy Summoning Circle, Music Box i Monkey Paw używa wyłącznie cienia.",
+                    "Nigdy nie robi eventu ze śpiewem. Próg ataku: 35%."
+                ]
+            },
+            {
+                "name": "Spirit",
+                "evidence": [
+                    "Spirit Box",
+                    "Writing",
+                    "EMF 5"
+                ],
+                "sanity": "50%",
+                "speed": "1.7 m/s",
+                "notes": [
+                    "Po użyciu kadzidła (Smudge Sticks) duch nie może rozpocząć polowania przez 180 sekund, zamiast standardowych 90 sekund.",
+                    "Nie posiada żadnych unikalnych cech ani umiejętności poza wydłużonym czasem blokady ataku po okadzeniu."
+                ],
+                "zero": [
+                    "Kadzidło użyte w pokoju ducha blokuje polowanie na 180 s zamiast standardowych 90 s.",
+                    "Użyj kadzidła i odmierz czas do kolejnego polowania – to jedyny wiarygodny test na 0 dowodów.",
+                    "Nie ma żadnych innych unikalnych cech."
+                ]
+            },
+            {
+                "name": "Thaye",
+                "evidence": [
+                    "Ghost Orbs",
+                    "Writing",
+                    "DOTS"
+                ],
+                "sanity": "75% - 15%",
+                "speed": "1.0  - 2.75 m/s",
+                "notes": [
+                    "Odpowiedź dotycząca wieku na Tablicy Ouija rośnie wraz ze starzeniem się ducha (może osiągnąć 90+ lat).",
+                    "Duch próbuje się postarzeć co 1-2 minuty. Jeśli gracz jest w tym samym pokoju, proces następuje; w przeciwnym razie czeka 30s i próbuje ponownie.",
+                    "Jest znacznie bardziej aktywny, gdy jest młodszy.",
+                    "Próg ataku: 75% sanity (najmłodszy) / 15% sanity (najstarszy).",
+                    "Prędkość: 2.75 m/s (najmłodszy) / 1.0 m/s (najstarszy).",
+                    "Nie posiada przyspieszenia LOS (Line of Sight) podczas pościgu."
+                ],
+                "zero": [
+                    "Wiek na Tablicy Ouija rośnie wraz ze starzeniem się ducha (może osiągnąć 90+ lat).",
+                    "Młodszy jest aktywniejszy i szybszy (do 2.75 m/s, próg 75%), starszy wolniejszy (1.0 m/s, próg 15%).",
+                    "Spędź czas w pokoju ducha i ponownie zapytaj o wiek."
+                ]
+            },
+            {
+                "name": "The Mimic",
+                "evidence": [
+                    "Spirit Box",
+                    "Ultraviolet",
+                    "Freezing Temps",
+                    "Ghost Orbs (ukryte)"
+                ],
+                "sanity": "10% / 50% / 100%",
+                "speed": "1.7 m/s (zmienna)",
+                "notes": [
+                    "Zawsze wykazuje Ghost Orbs jako dodatkowy dowód, nawet w trybach z 0 dowodami.",
+                    "Naśladuje innego ducha co 30-120 sekund, przejmując wszystkie jego zachowania, cechy i umiejętności (z wyjątkiem dowodów).",
+                    "Kopiuje zachowanie aktualnie naśladowanego ducha.",
+                    "Kopiuje prędkość aktualnie naśladowanego ducha.",
+                    "Prowadzi to do niespójnych zachowań i nagłych zmian progów ataku oraz prędkości."
+                ],
+                "zero": [
+                    "Zawsze pokazuje Ghost Orbs jako dodatkowy dowód, nawet bez dowodów.",
+                    "Co 30-120 s naśladuje innego ducha i kopiuje jego zachowanie, próg ataku i prędkość.",
+                    "Zachowanie zmienia się między polowaniami (np. inne prędkości i progi)."
+                ]
+            },
+            {
+                "name": "The Twins",
+                "evidence": [
+                    "EMF 5",
+                    "Spirit Box",
+                    "Freezing Temps"
+                ],
+                "sanity": "50%",
+                "speed": "1.5 m/s, 1.9 m/s",
+                "notes": [
+                    "Potrafią wykonać 2 interakcje w tym samym czasie: jedną w standardowym promieniu (2.12m/4.24m) i drugą w rozszerzonym (8.48m/16.97m).",
+                    "Prędkość podczas polowania wynosi 1.5 m/s (główny duch) lub 1.9 m/s (klon).",
+                    "Aktywacja czujników ruchu, nadepnięcie na sól oraz odpowiedzi na Spirit Box występują tylko w fizycznej lokalizacji głównego ducha.",
+                    "Prędkość 1.5 m/s występuje, gdy polowanie zaczyna się ze standardowego zasięgu, a 1.9 m/s, gdy z rozszerzonego."
+                ],
+                "zero": [
+                    "Potrafią wykonać 2 interakcje naraz w różnych miejscach.",
+                    "Prędkość w polowaniu to 1.5 m/s lub 1.9 m/s, zależnie od tego, z którego bliźniaka zaczyna się polowanie.",
+                    "Czujniki ruchu i sól reagują tylko na głównego ducha."
+                ]
+            },
+            {
+                "name": "Wraith",
+                "evidence": [
+                    "EMF 5",
+                    "Spirit Box",
+                    "DOTS"
+                ],
+                "sanity": "50%",
+                "speed": "1.7 m/s",
+                "notes": [
+                    "Nigdy nie nadepnie na sól ani nie wejdzie z nią w żadną interakcję.",
+                    "Nie zostanie spowolniony przez sól poziomu 3 (Tier 3) podczas polowania.",
+                    "Umiejętność: Potrafi przeteleportować się do losowego gracza, zostawiając EMF 2 lub EMF 5 w miejscu pojawienia się (na wysokości stóp).",
+                    "Po teleportacji duch wraca pieszo do swojego ulubionego pokoju."
+                ],
+                "zero": [
+                    "Nigdy nie nadepnie na sól, a sól Tier 3 go nie spowalnia.",
+                    "Potrafi się teleportować do losowego gracza i zostawić EMF 2 (lub 5) na wysokości stóp.",
+                    "Po teleportacji może rozpocząć polowanie z dowolnego miejsca."
+                ]
+            },
+            {
+                "name": "Yokai",
+                "evidence": [
+                    "Spirit Box",
+                    "Ghost Orbs",
+                    "DOTS"
+                ],
+                "sanity": "50% / 80%",
+                "speed": "1.7 m/s",
+                "notes": [
+                    "Zasięg słyszenia/wykrywania graczy podczas polowania jest ograniczony do 2.5m lub mniej.",
+                    "Kończy event z pozytywką (Music Box), gdy głowa ducha znajduje się 0.5m od niej (zamiast standardowego 1m).",
+                    "Staje się znacznie bardziej aktywny, gdy gracze rozmawiają w jego pobliżu.",
+                    "Rozmowa w tym samym pokoju co Yokai może sprowokować polowanie już przy 80% sanity.",
+                    "Próg ataku: 80% sanity (podczas mówienia w jego pokoju) / 50% sanity (normalnie)."
+                ],
+                "zero": [
+                    "W polowaniu słyszy dźwięki i elektronikę tylko do 2.5 m (mniej niż inne duchy).",
+                    "Gdy gracze rozmawiają w jego pokoju, polowanie zaczyna się już przy 80% sanity.",
+                    "Staje się aktywniejszy, gdy rozmawiasz w jego pobliżu."
+                ]
+            },
+            {
+                "name": "Yurei",
+                "evidence": [
+                    "Ghost Orbs",
+                    "Freezing Temps",
+                    "DOTS"
+                ],
+                "sanity": "50%",
+                "speed": "1.7 m/s",
+                "notes": [
+                    "Jedyny duch, który może zamknąć lub wejść w interakcję z drzwiami wyjściowymi poza polowaniem/eventem.",
+                    "Podczas interakcji z drzwiami (poza polowaniem) musi je całkowicie otworzyć lub zamknąć.",
+                    "Użycie kadzidła (Smudge Sticks) uwięzi ducha w jego pokoju na czas trwania efektu (90s).",
+                    "Nie może pokazać dowodu DOTS, będąc pod wpływem kadzidła (90s).",
+                    "Umiejętność: Może zatrzasnąć drzwi, obniżając sanity pobliskich graczy o 15%, jeśli w pomieszczeniu znajdują się drzwi."
+                ],
+                "zero": [
+                    "Jedyny duch, który może zamknąć drzwi wyjściowe poza polowaniem lub eventem.",
+                    "Poza polowaniem zawsze w pełni otwiera lub zamyka drzwi (nie uchyla ich).",
+                    "Kadzidło więzi go w pokoju na 90 s.",
+                    "Może zatrzasnąć drzwi, obniżając sanity pobliskich graczy o 15%."
+                ]
+            }
+        ];
+
+
+        /* ==========================================================================
+           HELPERS
+           ========================================================================== */
+
+        const $ = id => document.getElementById(id);
+        const pick = list => list[Math.floor(Math.random() * list.length)];
+
+        function shuffle(list) {
+            const copy = [...list];
+            for (let i = copy.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [copy[i], copy[j]] = [copy[j], copy[i]];
+            }
+            return copy;
+        }
+
+        const clean = text => text.replace(/\s+/g, " ").trim();                  // "1.0  - 2.75 m/s" -> "1.0 - 2.75 m/s"
+        const esc = text => String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        const baseName = evidence => evidence.replace(/\s*\(.*?\)/g, "").trim();  // "Ghost Orbs (ukryte)" -> "Ghost Orbs"
+        const evidenceOf = ghost => ghost.evidence.map(baseName);
+        const evidenceSet = ghost => evidenceOf(ghost).sort().join(" · ");
+        const sharedEvidence = (a, b) => evidenceOf(a).filter(name => evidenceOf(b).includes(name)).length;
+
+        const ALL_EVIDENCE = ["EMF 5", "Spirit Box", "Ultraviolet", "DOTS", "Ghost Writing", "Ghost Orbs", "Freezing Temps"];
+
+        const BADGE_CLASS = [["emf", "emf"], ["box", "box"], ["ultra", "uv"], ["dots", "dots"], ["writ", "writing"], ["orb", "orbs"], ["freez", "freezing"]];
+        const badgeClass = name => (BADGE_CLASS.find(([key]) => name.toLowerCase().includes(key)) || [0, ""])[1];
+
+        function readStore(key, fallback) {
+            try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch (error) { return fallback; }
+        }
+
+        function writeStore(key, value) {
+            try { localStorage.setItem(key, JSON.stringify(value)); } catch (error) { /* storage blocked */ }
+        }
+
+
+        /* ==========================================================================
+           QUESTION BUILDERS
+           Each one takes a ghost and returns a question, or null when that ghost
+           has no good question of this kind. A question looks like:
+           { prompt, clue?, options: [text, ...], answer: index, ghost }
+           ========================================================================== */
+
+        /* Up to 3 wrong answers, drawn from the 8 most similar candidates so they are tempting. */
+        function similarGhosts(ghost, candidates) {
+            const ranked = shuffle(candidates.filter(other => other !== ghost))
+                .sort((a, b) => sharedEvidence(b, ghost) - sharedEvidence(a, ghost));
+            return shuffle(ranked.slice(0, 8));
+        }
+
+        function makeQuestion(prompt, correct, wrong, ghost, clue) {
+            const options = shuffle([correct, ...wrong.slice(0, 3)]);
+            return { prompt, clue, options, answer: options.indexOf(correct), ghost };
+        }
+
+        const BUILDERS = {
+            /* "Which evidence does X have?" */
+            evidenceOf(ghost) {
+                const correct = evidenceSet(ghost);
+                const wrong = [...new Set(similarGhosts(ghost, GHOSTS).map(evidenceSet))].filter(set => set !== correct);
+                if (wrong.length < 3) return null;
+                return makeQuestion(`Jakie dowody ma ${ghost.name}?`, correct, wrong, ghost);
+            },
+
+            /* "Which ghost has this exact evidence?" (only when no other ghost shares the set) */
+            ghostByEvidence(ghost) {
+                const sameSet = GHOSTS.filter(other => evidenceSet(other) === evidenceSet(ghost));
+                if (sameSet.length > 1) return null;
+                const wrong = similarGhosts(ghost, GHOSTS).map(other => other.name);
+                return makeQuestion(`Który duch ma dowody: ${evidenceSet(ghost)}?`, ghost.name, wrong, ghost);
+            },
+
+            /* "Which of these does X NOT have?" */
+            notEvidence(ghost) {
+                if (ghost.evidence.length !== 3) return null;
+                const has = evidenceOf(ghost);
+                const missing = ALL_EVIDENCE.filter(name => !has.includes(name));
+                return makeQuestion(`Którego z tych dowodów NIE ma ${ghost.name}?`, pick(missing), shuffle(has), ghost);
+            },
+
+            /* "What is X's base speed?" */
+            speed(ghost) {
+                const correct = clean(ghost.speed);
+                const wrong = shuffle([...new Set(GHOSTS.map(other => clean(other.speed)))].filter(speed => speed !== correct));
+                return makeQuestion(`Jaka jest bazowa prędkość ${ghost.name}?`, correct, wrong, ghost);
+            },
+
+            /* "At what sanity does X start hunting?" */
+            hunt(ghost) {
+                const correct = clean(ghost.sanity);
+                const wrong = shuffle([...new Set(GHOSTS.map(other => clean(other.sanity)))].filter(sanity => sanity !== correct));
+                return makeQuestion(`Przy jakim sanity ${ghost.name} zaczyna polować?`, correct, wrong, ghost);
+            },
+
+            /* "Which ghost does this clue describe?" (a line from the card notes or 0-evidence tips) */
+            clue(ghost) {
+                const lines = [...ghost.notes, ...ghost.zero].filter(line => isGoodClue(line, ghost));
+                if (!lines.length) return null;
+                const wrong = shuffle(GHOSTS.filter(other => other !== ghost)).map(other => other.name);
+                return makeQuestion("Który duch pasuje do tej wskazówki?", ghost.name, wrong, ghost, pick(lines));
+            }
+        };
+
+        /* A clue is usable when it is long enough, does not give the name away,
+           is not a generic line, and appears on exactly one ghost. */
+        const CLUE_USES = new Map();
+        GHOSTS.forEach(ghost => [...ghost.notes, ...ghost.zero].forEach(line => CLUE_USES.set(line, (CLUE_USES.get(line) || 0) + 1)));
+
+        function isGoodClue(line, ghost) {
+            return line.length >= 30 && line.length <= 210 &&
+                !line.toLowerCase().includes(ghost.name.toLowerCase()) &&
+                !/próg ataku|standardow|^brak|nie posiada/i.test(line) &&
+                CLUE_USES.get(line) === 1;
+        }
+
+        /* Which question types each mode uses. */
+        const MODES = {
+            mixed:    { title: "MIESZANY",             accent: "#00e5ff", text: "Wszystkiego po trochu: dowody, prędkość, próg ataku i wskazówki z notatek.", types: ["evidenceOf", "ghostByEvidence", "notEvidence", "speed", "hunt", "clue"] },
+            evidence: { title: "DOWODY",               accent: "#ff2bd6", text: "Jakie dowody ma dany duch i który duch ma dany zestaw.",                    types: ["evidenceOf", "ghostByEvidence", "notEvidence"] },
+            stats:    { title: "PRĘDKOŚĆ I PRÓG ATAKU", accent: "#f9f002", text: "Liczby, które odróżniają duchy podczas polowania.",                         types: ["speed", "hunt"] },
+            clues:    { title: "ROZPOZNAJ PO WSKAZÓWCE", accent: "#d2afff", text: "Czytasz jedną wskazówkę z notatek i zgadujesz ducha. Najtrudniejszy tryb.",  types: ["clue"] }
+        };
+
+        /* Builds a round: different ghosts where possible, no repeats of the same ghost until all were used. */
+        function buildRound(modeKey, total) {
+            const types = MODES[modeKey].types;
+            const used = new Set();
+            const round = [];
+
+            for (let attempts = 0; round.length < total && attempts < 600; attempts++) {
+                let pool = GHOSTS.filter(ghost => !used.has(ghost.name));
+                if (!pool.length) { used.clear(); pool = GHOSTS; }
+
+                const ghost = pick(pool);
+                const question = BUILDERS[pick(types)](ghost);
+                if (question) {
+                    used.add(ghost.name);
+                    round.push(question);
+                }
+            }
+            return round;
+        }
+
+
+        /* ==========================================================================
+           GAME STATE
+           ========================================================================== */
+
+        const game = { mode: "mixed", total: 10, round: [], index: 0, score: 0, streak: 0, bestStreak: 0, locked: false, missed: [] };
+
+        function show(screen) {
+            ["start", "question", "result"].forEach(name => { $("screen-" + name).hidden = name !== screen; });
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+
+        const bestKey = (mode, total) => `${mode}-${total}`;
+        const bestScores = () => readStore("gl-quiz-best", {});
+
+
+        /* ==========================================================================
+           START SCREEN
+           ========================================================================== */
+
+        function renderModes() {
+            const best = bestScores();
+            $("modes").innerHTML = Object.entries(MODES).map(([key, mode]) => {
+                const record = best[bestKey(key, game.total)];
+                return `
+                    <button class="mode" data-mode="${key}" style="--accent:${mode.accent}">
+                        <h3>${mode.title}</h3>
+                        <p>${mode.text}</p>
+                        <small>${record !== undefined ? `REKORD: ${record} / ${game.total}` : "JESZCZE NIE GRANO"}</small>
+                    </button>`;
+            }).join("");
+        }
+
+        function startGame(modeKey) {
+            Object.assign(game, { mode: modeKey, round: buildRound(modeKey, game.total), index: 0, score: 0, streak: 0, bestStreak: 0, missed: [] });
+            show("question");
+            showQuestion();
+        }
+
+
+        /* ==========================================================================
+           QUESTION SCREEN
+           ========================================================================== */
+
+        function ghostInfo(ghost, withNotes = true) {
+            const notes = list => list.map(line => `<li>${esc(line)}</li>`).join("");
+            return `
+                <div class="info">
+                    <div class="info-head">
+                        <b>${esc(ghost.name)}</b>
+                        ${ghost.evidence.map(name => `<span class="badge ${badgeClass(name)}">${esc(name)}</span>`).join("")}
+                    </div>
+                    <div class="info-stats">
+                        <span>PRÓG ATAKU <b>${esc(clean(ghost.sanity))}</b></span>
+                        <span>PRĘDKOŚĆ <b>${esc(clean(ghost.speed))}</b></span>
+                    </div>
+                    ${withNotes ? `
+                    <details>
+                        <summary>▸ POKAŻ NOTATKI O TYM DUCHU</summary>
+                        <h4>NOTATKI ŚLEDCZE</h4><ul>${notes(ghost.notes)}</ul>
+                        <h4>0-EVIDENCE</h4><ul>${notes(ghost.zero)}</ul>
+                    </details>` : ""}
+                </div>`;
+        }
+
+        function showQuestion() {
+            const question = game.round[game.index];
+            game.locked = false;
+
+            $("q-number").textContent = game.index + 1;
+            $("q-total").textContent = game.round.length;
+            $("q-score").textContent = game.score;
+            $("q-streak").textContent = game.streak;
+            $("q-bar").style.width = (game.index / game.round.length) * 100 + "%";
+
+            $("q-text").textContent = question.prompt;
+            $("q-clue").hidden = !question.clue;
+            $("q-clue").textContent = question.clue ? `„${question.clue}”` : "";
+
+            $("q-options").innerHTML = question.options.map((text, i) =>
+                `<button class="opt" data-i="${i}"><kbd>${"ABCD"[i]}</kbd><span>${esc(text)}</span></button>`).join("");
+            $("q-feedback").hidden = true;
+        }
+
+        function answer(choice) {
+            if (game.locked) return;
+            game.locked = true;
+
+            const question = game.round[game.index];
+            const right = choice === question.answer;
+            const buttons = [...document.querySelectorAll(".opt")];
+
+            buttons.forEach((button, i) => {
+                button.disabled = true;
+                if (i === question.answer) button.classList.add("correct");
+                else if (i === choice) button.classList.add("wrong");
+                else button.classList.add("dim");
+            });
+
+            if (right) {
+                game.score++;
+                game.streak++;
+                game.bestStreak = Math.max(game.bestStreak, game.streak);
+            } else {
+                game.streak = 0;
+                game.missed.push({ question, chosen: question.options[choice] });
+            }
+            $("q-score").textContent = game.score;
+            $("q-streak").textContent = game.streak;
+
+            const last = game.index === game.round.length - 1;
+            $("q-feedback").hidden = false;
+            $("q-feedback").innerHTML = `
+                <div class="verdict ${right ? "ok" : "no"}">${right ? "✔ DOBRZE!" : "✖ NIE TYM RAZEM"}</div>
+                ${right ? "" : `<p style="margin-bottom:12px">Poprawna odpowiedź: <b style="color:var(--good)">${esc(question.options[question.answer])}</b></p>`}
+                ${ghostInfo(question.ghost)}
+                <button class="btn" id="next">${last ? "ZOBACZ WYNIK ▸" : "DALEJ ▸"}</button>`;
+            $("next").focus();
+        }
+
+        function next() {
+            if (game.index >= game.round.length - 1) { showResult(); return; }
+            game.index++;
+            showQuestion();
+        }
+
+
+        /* ==========================================================================
+           RESULT SCREEN
+           ========================================================================== */
+
+        const RANKS = [[95, "MISTRZ DUCHÓW"], [80, "EKSPERT"], [60, "ŁOWCA DUCHÓW"], [40, "ADEPT"], [0, "NOWICJUSZ"]];
+
+        function showResult() {
+            const total = game.round.length;
+            const percent = Math.round((game.score / total) * 100);
+
+            const best = bestScores();
+            const key = bestKey(game.mode, game.total);
+            const isRecord = best[key] === undefined || game.score > best[key];
+            if (isRecord) { best[key] = game.score; writeStore("gl-quiz-best", best); }
+
+            $("r-ring").style.setProperty("--p", percent);
+            $("r-score").innerHTML = `${game.score}/${total}<small>${percent}%</small>`;
+            $("r-rank").textContent = RANKS.find(([min]) => percent >= min)[1];
+            $("r-meta").innerHTML = `NAJDŁUŻSZA SERIA: ${game.bestStreak}<br>${isRecord ? "NOWY REKORD!" : `REKORD: ${best[key]} / ${game.total}`}`;
+
+            $("r-missed-wrap").hidden = !game.missed.length;
+            $("r-missed").innerHTML = game.missed.map(({ question, chosen }) => `
+                <div class="missed-item">
+                    <div class="q">${esc(question.prompt)}</div>
+                    ${question.clue ? `<div class="clue" style="margin-bottom:8px">„${esc(question.clue)}”</div>` : ""}
+                    <div class="a">Twoja odpowiedź: <s>${esc(chosen)}</s> &nbsp;→&nbsp; poprawna: <b>${esc(question.options[question.answer])}</b></div>
+                    ${ghostInfo(question.ghost)}
+                </div>`).join("");
+
+            show("result");
+        }
+
+
+        /* ==========================================================================
+           START-UP
+           ========================================================================== */
+
+        function init() {
+            $("ghost-count").textContent = GHOSTS.length;
+            renderModes();
+
+            $("lengths").addEventListener("click", event => {
+                const pill = event.target.closest(".pill");
+                if (!pill) return;
+                game.total = Number(pill.dataset.total);
+                document.querySelectorAll(".pill").forEach(item => item.classList.toggle("active", item === pill));
+                renderModes();
+            });
+
+            $("modes").addEventListener("click", event => {
+                const card = event.target.closest(".mode");
+                if (card) startGame(card.dataset.mode);
+            });
+
+            $("q-options").addEventListener("click", event => {
+                const option = event.target.closest(".opt");
+                if (option) answer(Number(option.dataset.i));
+            });
+
+            $("q-feedback").addEventListener("click", event => {
+                if (event.target.closest("#next")) next();
+            });
+
+            $("r-again").addEventListener("click", () => startGame(game.mode));
+            $("r-menu").addEventListener("click", () => { renderModes(); show("start"); });
+
+            /* keyboard: A-D or 1-4 answers, Enter / Space / → goes on */
+            document.addEventListener("keydown", event => {
+                if ($("screen-question").hidden || event.ctrlKey || event.metaKey || event.altKey) return;
+                const key = event.key.toLowerCase();
+                const choice = "abcd".indexOf(key) >= 0 ? "abcd".indexOf(key) : ["1", "2", "3", "4"].indexOf(key);
+
+                if (!game.locked && choice >= 0 && choice < game.round[game.index].options.length) {
+                    answer(choice);
+                } else if (game.locked && (key === "enter" || key === " " || key === "arrowright")) {
+                    event.preventDefault();
+                    next();
+                }
+            });
+        }
+
+        init();
+    </script>
+</body>
+</html>
